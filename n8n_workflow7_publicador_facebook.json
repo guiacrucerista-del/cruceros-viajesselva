@@ -77,129 +77,29 @@
     },
     {
       "parameters": {
-        "conditions": { "boolean": [{ "value1": "={{ $('Preparar Post').item.json.publicarMSC }}", "value2": true }] }
+        "command": "=cd /opt/guiacrucerista/scripts && source .env && node playwright_facebook_grupos.js --text '{{ $('Preparar Post').item.json.texto.replace(/'/g, "'\\''") }}' --url '{{ $('Preparar Post').item.json.urlMSC }}' --groups '811550587597467,1116074769675601,1882092085657041'"
       },
-      "id": "if-msc",
-      "name": "IF MSC",
-      "type": "n8n-nodes-base.if",
-      "typeVersion": 2,
+      "id": "playwright-grupos",
+      "name": "Playwright — Publicar en Grupos",
+      "type": "n8n-nodes-base.executeCommand",
+      "typeVersion": 1,
       "position": [1340, 400]
     },
     {
       "parameters": {
-        "url": "https://graph.facebook.com/v20.0/811550587597467/feed",
-        "method": "POST",
-        "sendBody": true,
-        "bodyParameters": { "parameters": [
-          { "name": "message", "value": "={{ $('Preparar Post').item.json.texto }}" },
-          { "name": "access_token", "value": "TU_USER_ACCESS_TOKEN_AQUI" }
-        ]}
+        "jsCode": "const raw = $input.item.json.stdout || '{}';
+try {
+  const result = JSON.parse(raw);
+  return [{ json: { playwrightResult: result, success: result.success } }];
+} catch (e) {
+  return [{ json: { playwrightResult: null, success: false, parseError: e.message } }];
+}"
       },
-      "id": "post-msc",
-      "name": "POST MSC Cruceros",
-      "type": "n8n-nodes-base.httpRequest",
-      "typeVersion": 4.2,
-      "position": [1560, 260]
-    },
-    {
-      "parameters": {
-        "url": "=https://graph.facebook.com/v20.0/{{ $json.id }}/comments",
-        "method": "POST",
-        "sendBody": true,
-        "bodyParameters": { "parameters": [
-          { "name": "message", "value": "={{ $('Preparar Post').item.json.urlMSC }}" },
-          { "name": "access_token", "value": "TU_USER_ACCESS_TOKEN_AQUI" }
-        ]}
-      },
-      "id": "comentar-msc",
-      "name": "Comentar URL MSC",
-      "type": "n8n-nodes-base.httpRequest",
-      "typeVersion": 4.2,
-      "position": [1780, 260]
-    },
-    {
-      "parameters": {
-        "conditions": { "boolean": [{ "value1": "={{ $('Preparar Post').item.json.publicarRCL }}", "value2": true }] }
-      },
-      "id": "if-royal",
-      "name": "IF Royal",
-      "type": "n8n-nodes-base.if",
+      "id": "parse-playwright",
+      "name": "Parsear Resultado Playwright",
+      "type": "n8n-nodes-base.code",
       "typeVersion": 2,
-      "position": [2000, 400]
-    },
-    {
-      "parameters": {
-        "url": "https://graph.facebook.com/v20.0/1116074769675601/feed",
-        "method": "POST",
-        "sendBody": true,
-        "bodyParameters": { "parameters": [
-          { "name": "message", "value": "={{ $('Preparar Post').item.json.texto }}" },
-          { "name": "access_token", "value": "TU_USER_ACCESS_TOKEN_AQUI" }
-        ]}
-      },
-      "id": "post-royal",
-      "name": "POST Royal Caribbean",
-      "type": "n8n-nodes-base.httpRequest",
-      "typeVersion": 4.2,
-      "position": [2220, 260]
-    },
-    {
-      "parameters": {
-        "url": "=https://graph.facebook.com/v20.0/{{ $json.id }}/comments",
-        "method": "POST",
-        "sendBody": true,
-        "bodyParameters": { "parameters": [
-          { "name": "message", "value": "={{ $('Preparar Post').item.json.urlRoyal }}" },
-          { "name": "access_token", "value": "TU_USER_ACCESS_TOKEN_AQUI" }
-        ]}
-      },
-      "id": "comentar-royal",
-      "name": "Comentar URL Royal",
-      "type": "n8n-nodes-base.httpRequest",
-      "typeVersion": 4.2,
-      "position": [2440, 260]
-    },
-    {
-      "parameters": {
-        "conditions": { "boolean": [{ "value1": "={{ $('Preparar Post').item.json.publicarCosta }}", "value2": true }] }
-      },
-      "id": "if-costa",
-      "name": "IF Costa",
-      "type": "n8n-nodes-base.if",
-      "typeVersion": 2,
-      "position": [2660, 400]
-    },
-    {
-      "parameters": {
-        "url": "https://graph.facebook.com/v20.0/1882092085657041/feed",
-        "method": "POST",
-        "sendBody": true,
-        "bodyParameters": { "parameters": [
-          { "name": "message", "value": "={{ $('Preparar Post').item.json.texto }}" },
-          { "name": "access_token", "value": "TU_USER_ACCESS_TOKEN_AQUI" }
-        ]}
-      },
-      "id": "post-costa",
-      "name": "POST Costa Cruceros",
-      "type": "n8n-nodes-base.httpRequest",
-      "typeVersion": 4.2,
-      "position": [2880, 260]
-    },
-    {
-      "parameters": {
-        "url": "=https://graph.facebook.com/v20.0/{{ $json.id }}/comments",
-        "method": "POST",
-        "sendBody": true,
-        "bodyParameters": { "parameters": [
-          { "name": "message", "value": "={{ $('Preparar Post').item.json.urlCosta }}" },
-          { "name": "access_token", "value": "TU_USER_ACCESS_TOKEN_AQUI" }
-        ]}
-      },
-      "id": "comentar-costa",
-      "name": "Comentar URL Costa",
-      "type": "n8n-nodes-base.httpRequest",
-      "typeVersion": 4.2,
-      "position": [3100, 260]
+      "position": [1560, 400]
     },
     {
       "parameters": {
@@ -242,35 +142,13 @@
     "IF Pagina": {
       "main": [
         [{ "node": "POST Página", "type": "main", "index": 0 }],
-        [{ "node": "IF MSC", "type": "main", "index": 0 }]
+        [{ "node": "Playwright — Publicar en Grupos", "type": "main", "index": 0 }]
       ]
     },
     "POST Página": { "main": [[{ "node": "Comentar URL Página", "type": "main", "index": 0 }]] },
-    "Comentar URL Página": { "main": [[{ "node": "IF MSC", "type": "main", "index": 0 }]] },
-    "IF MSC": {
-      "main": [
-        [{ "node": "POST MSC Cruceros", "type": "main", "index": 0 }],
-        [{ "node": "IF Royal", "type": "main", "index": 0 }]
-      ]
-    },
-    "POST MSC Cruceros": { "main": [[{ "node": "Comentar URL MSC", "type": "main", "index": 0 }]] },
-    "Comentar URL MSC": { "main": [[{ "node": "IF Royal", "type": "main", "index": 0 }]] },
-    "IF Royal": {
-      "main": [
-        [{ "node": "POST Royal Caribbean", "type": "main", "index": 0 }],
-        [{ "node": "IF Costa", "type": "main", "index": 0 }]
-      ]
-    },
-    "POST Royal Caribbean": { "main": [[{ "node": "Comentar URL Royal", "type": "main", "index": 0 }]] },
-    "Comentar URL Royal": { "main": [[{ "node": "IF Costa", "type": "main", "index": 0 }]] },
-    "IF Costa": {
-      "main": [
-        [{ "node": "POST Costa Cruceros", "type": "main", "index": 0 }],
-        [{ "node": "Sheets - Marcar Publicado", "type": "main", "index": 0 }]
-      ]
-    },
-    "POST Costa Cruceros": { "main": [[{ "node": "Comentar URL Costa", "type": "main", "index": 0 }]] },
-    "Comentar URL Costa": { "main": [[{ "node": "Sheets - Marcar Publicado", "type": "main", "index": 0 }]] },
+    "Comentar URL Página": { "main": [[{ "node": "Playwright — Publicar en Grupos", "type": "main", "index": 0 }]] },
+    "Playwright — Publicar en Grupos": { "main": [[{ "node": "Parsear Resultado Playwright", "type": "main", "index": 0 }]] },
+    "Parsear Resultado Playwright": { "main": [[{ "node": "Sheets - Marcar Publicado", "type": "main", "index": 0 }]] },
     "Sheets - Marcar Publicado": { "main": [[{ "node": "Telegram - Confirmar", "type": "main", "index": 0 }]] }
   },
   "settings": { "executionOrder": "v1", "saveManualExecutions": true },
