@@ -1,0 +1,315 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Panel de Ofertas — Viajes Selva (Interno)</title>
+  <meta name="robots" content="noindex, nofollow" />
+  <link rel="stylesheet" href="styles.css" />
+  <style>
+    body { background: #060f1e; }
+    .panel-wrap {
+      min-height: 100vh;
+      display: flex; align-items: center; justify-content: center;
+      padding: 40px 20px;
+    }
+    .panel-card {
+      width: 100%; max-width: 640px;
+      background: rgba(255,255,255,.04);
+      border: 1px solid rgba(255,255,255,.08);
+      border-radius: var(--radius-lg);
+      padding: 48px 44px;
+      backdrop-filter: blur(20px);
+      box-shadow: var(--shadow-lg);
+      position: relative; overflow: hidden;
+    }
+    .panel-card::before {
+      content: '';
+      position: absolute; top: 0; left: 0; right: 0; height: 3px;
+      background: linear-gradient(90deg, var(--gold), var(--ocean), var(--gold));
+    }
+    .panel-header {
+      display: flex; align-items: center; gap: 14px; margin-bottom: 32px;
+    }
+    .panel-icon {
+      width: 52px; height: 52px;
+      background: linear-gradient(135deg, var(--gold), var(--gold-light));
+      border-radius: var(--radius-sm);
+      display: flex; align-items: center; justify-content: center;
+      font-size: 1.6rem;
+    }
+    .panel-header h1 { font-size: 1.4rem; font-weight: 700; }
+    .panel-header p { font-size: .85rem; color: var(--gray-500); }
+
+    .tag-interno {
+      display: inline-block;
+      background: rgba(239,68,68,.15); border: 1px solid rgba(239,68,68,.3);
+      color: #ef4444; font-size: .75rem; font-weight: 700;
+      padding: 3px 10px; border-radius: 50px; margin-bottom: 24px;
+      text-transform: uppercase; letter-spacing: .06em;
+    }
+
+    .divider {
+      border: none; border-top: 1px solid rgba(255,255,255,.07);
+      margin: 28px 0;
+    }
+    .section-label {
+      font-size: .75rem; font-weight: 700; text-transform: uppercase;
+      letter-spacing: .08em; color: var(--gold); margin-bottom: 16px;
+    }
+    .preview-box {
+      background: rgba(255,255,255,.03);
+      border: 1px solid rgba(255,255,255,.07);
+      border-radius: var(--radius-sm);
+      padding: 20px; margin-top: 20px;
+    }
+    .preview-box h3 { font-size: 1rem; margin-bottom: 8px; }
+    .preview-box p { font-size: .85rem; color: var(--gray-500); }
+
+    .status-bar {
+      margin-top: 20px; padding: 14px 18px;
+      border-radius: var(--radius-sm);
+      font-size: .875rem; font-weight: 600;
+      display: none;
+    }
+    .status-bar.success {
+      background: rgba(16,185,129,.15); border: 1px solid rgba(16,185,129,.3);
+      color: #10b981; display: block;
+    }
+    .status-bar.error {
+      background: rgba(239,68,68,.12); border: 1px solid rgba(239,68,68,.3);
+      color: #ef4444; display: block;
+    }
+    .counter-badge {
+      background: rgba(13,110,253,.15); border: 1px solid rgba(13,110,253,.2);
+      color: var(--ocean-light); font-size: .8rem; font-weight: 600;
+      padding: 4px 12px; border-radius: 50px;
+      margin-top: 12px; display: inline-block;
+    }
+  </style>
+</head>
+<body>
+
+<div class="panel-wrap">
+  <div class="panel-card">
+
+    <div class="panel-header">
+      <div class="panel-icon">📢</div>
+      <div>
+        <h1>Panel de Ofertas</h1>
+        <p>Envío masivo segmentado por naviera · Uso interno</p>
+      </div>
+    </div>
+
+    <div class="tag-interno">🔒 Solo personal autorizado</div>
+
+    <form id="ofertaForm">
+
+      <!-- NAVIERA -->
+      <p class="section-label">1. Naviera de la oferta</p>
+      <div class="form-group">
+        <label for="naviera_oferta">Selecciona la naviera</label>
+        <select id="naviera_oferta" name="naviera_oferta" required>
+          <option value="">Selecciona naviera...</option>
+          <option value="msc">MSC Cruceros</option>
+          <option value="costa">Costa Cruceros</option>
+          <option value="royal">Royal Caribbean</option>
+          <option value="norwegian">Norwegian Cruise Line</option>
+          <option value="carnival">Carnival</option>
+          <option value="celebrity">Celebrity Cruises</option>
+          <option value="princess">Princess Cruises</option>
+          <option value="silversea">Silversea ✨</option>
+          <option value="cunard">Cunard ✨</option>
+          <option value="regent">Regent Seven Seas ✨</option>
+          <option value="todas">📢 Todas las navieras (envío general)</option>
+        </select>
+      </div>
+
+      <hr class="divider" />
+
+      <!-- OFERTA -->
+      <p class="section-label">2. Datos de la oferta</p>
+
+      <div class="form-group">
+        <label for="asunto_email">Asunto del email</label>
+        <input type="text" id="asunto_email" name="asunto_email" required
+          placeholder="ej: Oferta flash MSC — Caribe desde 899€/persona" />
+      </div>
+
+      <div class="form-row">
+        <div class="form-group">
+          <label for="destino_oferta">Destino</label>
+          <input type="text" id="destino_oferta" name="destino_oferta" required
+            placeholder="ej: Caribe Oriental" />
+        </div>
+        <div class="form-group">
+          <label for="precio_desde">Precio desde (€)</label>
+          <input type="number" id="precio_desde" name="precio_desde" required
+            placeholder="899" min="0" />
+        </div>
+      </div>
+
+      <div class="form-row">
+        <div class="form-group">
+          <label for="barco">Barco / Ship</label>
+          <input type="text" id="barco" name="barco"
+            placeholder="ej: MSC Seashore" />
+        </div>
+        <div class="form-group">
+          <label for="duracion">Duración (noches)</label>
+          <input type="number" id="duracion" name="duracion"
+            placeholder="7" min="1" />
+        </div>
+      </div>
+
+      <div class="form-row">
+        <div class="form-group">
+          <label for="fecha_salida">Fecha de salida</label>
+          <input type="date" id="fecha_salida" name="fecha_salida" />
+        </div>
+        <div class="form-group">
+          <label for="valida_hasta">Oferta válida hasta</label>
+          <input type="date" id="valida_hasta" name="valida_hasta" />
+        </div>
+      </div>
+
+      <div class="form-group">
+        <label for="descripcion_oferta">Descripción de la oferta</label>
+        <textarea id="descripcion_oferta" name="descripcion_oferta" rows="4"
+          style="resize:vertical; min-height:100px;"
+          placeholder="Incluye: puertos de escala, qué está incluido (bebidas, excursiones, vuelo), condiciones especiales..."></textarea>
+      </div>
+
+      <div class="form-group">
+        <label for="url_reserva">URL de reserva directa</label>
+        <input type="url" id="url_reserva" name="url_reserva"
+          placeholder="https://viajesselva.es/oferta/msc-caribe-2025" />
+      </div>
+
+      <hr class="divider" />
+
+      <!-- SEGMENTACIÓN ADICIONAL -->
+      <p class="section-label">3. Segmentación (opcional)</p>
+
+      <div class="form-row">
+        <div class="form-group">
+          <label for="filtro_clasificacion">Clasificación de leads</label>
+          <select id="filtro_clasificacion" name="filtro_clasificacion">
+            <option value="todos">Todos los leads</option>
+            <option value="caliente">Solo leads calientes 🔥</option>
+            <option value="tibio">Solo leads tibios 🌡️</option>
+            <option value="frio">Solo leads fríos 🧊</option>
+            <option value="caliente,tibio">Calientes + Tibios</option>
+          </select>
+        </div>
+        <div class="form-group">
+          <label for="filtro_destino">Filtrar por destino</label>
+          <select id="filtro_destino" name="filtro_destino">
+            <option value="todos">Todos los destinos</option>
+            <option value="caribe">Caribe</option>
+            <option value="mediterraneo">Mediterráneo</option>
+            <option value="vuelta_mundo">Vuelta al mundo</option>
+            <option value="norte_europa">Norte de Europa</option>
+            <option value="alaska">Alaska</option>
+          </select>
+        </div>
+      </div>
+
+      <!-- PREVIEW -->
+      <div class="preview-box" id="previewBox" style="display:none;">
+        <p class="section-label" style="margin-bottom:12px;">Vista previa del envío</p>
+        <h3 id="preview-asunto">—</h3>
+        <p id="preview-naviera" style="margin-top:6px;"></p>
+        <p id="preview-precio" style="margin-top:4px; color:var(--gold); font-weight:700;"></p>
+        <div class="counter-badge" id="preview-segmento">Calculando destinatarios...</div>
+      </div>
+
+      <button type="submit" class="btn-submit" id="enviarBtn" style="margin-top:28px;">
+        <span class="btn-text">📧 Enviar oferta a leads segmentados</span>
+      </button>
+
+      <div class="status-bar" id="statusBar"></div>
+
+    </form>
+
+  </div>
+</div>
+
+<script>
+// === PREVIEW EN TIEMPO REAL ===
+const campos = ['naviera_oferta','asunto_email','precio_desde','destino_oferta'];
+campos.forEach(id => {
+  document.getElementById(id).addEventListener('change', actualizarPreview);
+  document.getElementById(id).addEventListener('input', actualizarPreview);
+});
+
+function actualizarPreview() {
+  const naviera = document.getElementById('naviera_oferta').value;
+  const asunto = document.getElementById('asunto_email').value;
+  const precio = document.getElementById('precio_desde').value;
+  const destino = document.getElementById('destino_oferta').value;
+
+  if (naviera && asunto) {
+    document.getElementById('previewBox').style.display = 'block';
+    document.getElementById('preview-asunto').textContent = asunto || '—';
+    document.getElementById('preview-naviera').textContent = 
+      `Naviera: ${naviera.toUpperCase()} · Destino: ${destino || '—'}`;
+    document.getElementById('preview-precio').textContent = 
+      precio ? `Desde ${precio}€/persona` : '';
+    document.getElementById('preview-segmento').textContent =
+      `Filtrando leads de ${naviera === 'todas' ? 'todas las navieras' : naviera.toUpperCase()}...`;
+  }
+}
+
+// === ENVÍO ===
+document.getElementById('ofertaForm').addEventListener('submit', async function(e) {
+  e.preventDefault();
+
+  const btn = document.getElementById('enviarBtn');
+  const status = document.getElementById('statusBar');
+  btn.disabled = true;
+  btn.querySelector('.btn-text').textContent = '⏳ Enviando...';
+
+  const payload = {
+    naviera:              document.getElementById('naviera_oferta').value,
+    asunto_email:         document.getElementById('asunto_email').value,
+    destino_oferta:       document.getElementById('destino_oferta').value,
+    precio_desde:         document.getElementById('precio_desde').value,
+    barco:                document.getElementById('barco').value,
+    duracion:             document.getElementById('duracion').value,
+    fecha_salida:         document.getElementById('fecha_salida').value,
+    valida_hasta:         document.getElementById('valida_hasta').value,
+    descripcion_oferta:   document.getElementById('descripcion_oferta').value,
+    url_reserva:          document.getElementById('url_reserva').value,
+    filtro_clasificacion: document.getElementById('filtro_clasificacion').value,
+    filtro_destino:       document.getElementById('filtro_destino').value,
+    timestamp:            new Date().toISOString()
+  };
+
+  try {
+    const res = await fetch('https://TU_VPS/webhook/oferta-naviera', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify(payload)
+    });
+
+    if (res.ok) {
+      status.className = 'status-bar success';
+      status.textContent = '✅ Oferta enviada correctamente. Recibirás confirmación por Telegram.';
+      document.getElementById('ofertaForm').reset();
+      document.getElementById('previewBox').style.display = 'none';
+    } else {
+      throw new Error('Error servidor');
+    }
+  } catch (err) {
+    status.className = 'status-bar error';
+    status.textContent = '❌ Error al conectar con el servidor. Verifica que n8n esté activo.';
+  } finally {
+    btn.disabled = false;
+    btn.querySelector('.btn-text').textContent = '📧 Enviar oferta a leads segmentados';
+  }
+});
+</script>
+
+</body>
+</html>

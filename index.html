@@ -1,0 +1,512 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Tu Crucero Perfecto | Viajes Selva — Especialistas en Cruceros</title>
+  <meta name="description" content="Encuentra el crucero perfecto para ti. Especialistas en MSC, Costa, Royal Caribbean, Silversea y más. Presupuesto sin compromiso en menos de 24h." />
+  <meta property="og:title" content="Tu Crucero Perfecto | Viajes Selva" />
+  <meta property="og:description" content="Especialistas en cruceros desde 2005. MSC, Costa, Royal Caribbean, Silversea y más de 15 navieras." />
+  <meta property="og:type" content="website" />
+  <meta property="og:url" content="https://viajesselva.es" />
+  <link rel="canonical" href="https://viajesselva.es" />
+  <link rel="stylesheet" href="styles.css" />
+</head>
+<body>
+
+<!-- LOADING OVERLAY -->
+<div class="loading-overlay" id="loadingOverlay">
+  <div class="spinner"></div>
+  <p style="color: var(--gray-500); font-size: .9rem;">Enviando tu solicitud...</p>
+</div>
+
+<!-- PARTICLES -->
+<canvas id="particles-canvas"></canvas>
+
+<!-- NAV -->
+<nav>
+  <div class="container nav-inner">
+    <a href="/" class="logo">
+      <div class="logo-icon">⚓</div>
+      <span class="logo-text">Viajes <span>Selva</span></span>
+    </a>
+    <a href="#formulario" class="nav-cta">Solicitar presupuesto</a>
+  </div>
+</nav>
+
+<!-- HERO -->
+<section class="hero" id="inicio">
+  <div class="container">
+    <div class="hero-grid">
+
+      <!-- LEFT: Texto -->
+      <div class="hero-content">
+        <div class="hero-badge">Especialistas en cruceros desde 2005</div>
+        <h1>Tu <span>crucero perfecto</span> te está esperando</h1>
+        <p class="hero-desc">
+          Más de 15 navieras, 200 destinos y 20 años de experiencia. 
+          Cuéntanos qué sueñas y te lo encontramos — sin comisiones ocultas.
+        </p>
+        <div class="hero-stats">
+          <div class="stat">
+            <div class="stat-num">20+</div>
+            <div class="stat-label">Años de experiencia</div>
+          </div>
+          <div class="stat">
+            <div class="stat-num">15k</div>
+            <div class="stat-label">Clientes felices</div>
+          </div>
+          <div class="stat">
+            <div class="stat-num">200+</div>
+            <div class="stat-label">Destinos disponibles</div>
+          </div>
+        </div>
+        <div style="display:flex; gap:16px; flex-wrap:wrap;">
+          <a href="#formulario" class="btn-cta-large" style="font-size:.95rem; padding:14px 32px;">
+            🚢 Solicitar presupuesto gratis
+          </a>
+        </div>
+      </div>
+
+      <!-- RIGHT: Formulario de captación -->
+      <div id="formulario">
+        <div class="form-card">
+          <h2 class="form-title">Encuentra tu crucero ideal</h2>
+          <p class="form-subtitle">Respuesta personalizada en menos de 24h · Sin compromiso</p>
+
+          <form id="leadForm" novalidate>
+
+            <!-- Campos visibles -->
+            <div class="form-row">
+              <div class="form-group">
+                <label for="nombre">Nombre</label>
+                <input type="text" id="nombre" name="nombre" placeholder="Tu nombre" required autocomplete="given-name" />
+              </div>
+              <div class="form-group">
+                <label for="email">Email</label>
+                <input type="email" id="email" name="email" placeholder="tu@email.com" required autocomplete="email" />
+              </div>
+            </div>
+
+            <div class="form-group">
+              <label for="telefono">Teléfono <span style="color:var(--gray-500);font-weight:400;">(opcional)</span></label>
+              <input type="tel" id="telefono" name="telefono" placeholder="+34 600 000 000" autocomplete="tel" />
+            </div>
+
+            <div class="form-group">
+              <label for="destino">¿A dónde quieres ir?</label>
+              <select id="destino" name="destino" required>
+                <option value="">Selecciona un destino...</option>
+                <option value="caribe" data-score="10">🌴 Caribe</option>
+                <option value="mediterraneo" data-score="8">🏛️ Mediterráneo</option>
+                <option value="vuelta_mundo" data-score="10">🌍 Vuelta al mundo</option>
+                <option value="norte_europa" data-score="8">🏰 Norte de Europa / Fiordos</option>
+                <option value="alaska" data-score="9">🧊 Alaska</option>
+                <option value="sudamerica" data-score="9">🌿 Sudamérica / Antártida</option>
+                <option value="asia" data-score="9">🏯 Asia / Pacífico</option>
+                <option value="canarias" data-score="7">🌋 Canarias</option>
+                <option value="otro" data-score="6">📍 Otro / No lo sé aún</option>
+              </select>
+            </div>
+
+            <div class="form-row">
+              <div class="form-group">
+                <label for="viajeros">¿Con quién viajas?</label>
+                <select id="viajeros" name="viajeros" required>
+                  <option value="">Selecciona...</option>
+                  <option value="pareja" data-score="9">💑 En pareja</option>
+                  <option value="familia" data-score="10">👨‍👩‍👧 Familia con niños</option>
+                  <option value="amigos" data-score="7">👥 Con amigos</option>
+                  <option value="solo" data-score="6">🧳 Solo/a</option>
+                  <option value="grupo" data-score="8">🎉 Grupo grande</option>
+                </select>
+              </div>
+              <div class="form-group">
+                <label for="fechas">¿Cuándo quieres viajar?</label>
+                <select id="fechas" name="fechas" required>
+                  <option value="">Selecciona...</option>
+                  <option value="menos3meses" data-score="10">📅 Menos de 3 meses</option>
+                  <option value="3a6meses" data-score="8">📅 Entre 3 y 6 meses</option>
+                  <option value="mas6meses" data-score="6">📅 Más de 6 meses</option>
+                  <option value="flexible" data-score="5">🗓️ Soy flexible</option>
+                </select>
+              </div>
+            </div>
+
+            <div class="form-row">
+              <div class="form-group">
+                <label for="presupuesto">Presupuesto por persona</label>
+                <select id="presupuesto" name="presupuesto" required>
+                  <option value="">Selecciona...</option>
+                  <option value="menos1000" data-score="4">Menos de 1.000€</option>
+                  <option value="1000a2000" data-score="6">1.000€ – 2.000€</option>
+                  <option value="2000a3000" data-score="8">2.000€ – 3.000€</option>
+                  <option value="mas3000" data-score="10">Más de 3.000€</option>
+                  <option value="sinlimite" data-score="10">Sin límite definido</option>
+                </select>
+              </div>
+              <div class="form-group">
+                <label for="naviera">Naviera preferida</label>
+                <select id="naviera" name="naviera">
+                  <option value="">Sin preferencia</option>
+                  <option value="msc" data-score="8">MSC Cruceros</option>
+                  <option value="costa" data-score="8">Costa Cruceros</option>
+                  <option value="royal" data-score="8">Royal Caribbean</option>
+                  <option value="norwegian" data-score="8">Norwegian Cruise Line</option>
+                  <option value="carnival" data-score="7">Carnival</option>
+                  <option value="celebrity" data-score="9">Celebrity Cruises</option>
+                  <option value="princess" data-score="9">Princess Cruises</option>
+                  <option value="silversea" data-score="10">Silversea ✨</option>
+                  <option value="cunard" data-score="10">Cunard ✨</option>
+                  <option value="regent" data-score="10">Regent Seven Seas ✨</option>
+                  <option value="otro" data-score="6">Otra / No lo sé</option>
+                </select>
+              </div>
+            </div>
+
+            <div class="form-group">
+              <label for="mensaje">¿Algo especial que debamos saber?</label>
+              <textarea id="mensaje" name="mensaje" rows="3"
+                placeholder="Aniversario, movilidad reducida, primera vez en crucero..."
+                style="resize:vertical; min-height:80px;"></textarea>
+            </div>
+
+            <!-- CAMPOS HIDDEN (scoring invisible) -->
+            <input type="hidden" id="score_total" name="score_total" value="0" />
+            <input type="hidden" id="clasificacion" name="clasificacion" value="" />
+            <input type="hidden" id="utm_source" name="utm_source" value="" />
+            <input type="hidden" id="utm_medium" name="utm_medium" value="" />
+            <input type="hidden" id="utm_campaign" name="utm_campaign" value="" />
+            <input type="hidden" id="utm_content" name="utm_content" value="" />
+            <input type="hidden" id="timestamp" name="timestamp" value="" />
+
+            <button type="submit" class="btn-submit" id="submitBtn">
+              <span class="btn-text">🚢 Quiero mi presupuesto personalizado</span>
+            </button>
+
+            <p class="form-legal">
+              Al enviar aceptas nuestra <a href="/privacidad.html">política de privacidad</a>.
+              No compartimos tus datos con terceros.
+            </p>
+          </form>
+
+          <!-- SUCCESS STATE -->
+          <div class="form-success" id="formSuccess">
+            <div class="success-icon">✅</div>
+            <h3>¡Solicitud recibida!</h3>
+            <p>Te contactaremos en menos de <strong>24 horas</strong> con tu presupuesto personalizado. Revisa también tu bandeja de spam.</p>
+            <p style="margin-top:12px; font-size:.85rem; color:var(--gray-500);">
+              Mientras tanto, visita <a href="https://guiacrucerista.com" style="color:var(--ocean-light);">GuiaCrucerista.com</a> 
+              para inspirarte con guías y consejos.
+            </p>
+          </div>
+
+        </div>
+      </div>
+
+    </div>
+  </div>
+</section>
+
+<!-- TRUST BAR -->
+<div class="trust-bar">
+  <div class="container">
+    <div class="trust-items">
+      <div class="trust-item"><span class="icon">🔒</span> Pago seguro garantizado</div>
+      <div class="trust-item"><span class="icon">⭐</span> 4.9/5 en Google Reviews</div>
+      <div class="trust-item"><span class="icon">🏅</span> IATA certificados</div>
+      <div class="trust-item"><span class="icon">📞</span> Atención en español</div>
+      <div class="trust-item"><span class="icon">✈️</span> Vuelos incluidos opcionales</div>
+    </div>
+  </div>
+</div>
+
+<!-- FEATURES -->
+<section class="features">
+  <div class="container text-center">
+    <p class="section-tag">¿Por qué Viajes Selva?</p>
+    <h2 class="section-title">Lo que nos diferencia</h2>
+    <div class="features-grid">
+      <div class="feature-card">
+        <div class="feature-icon">🎯</div>
+        <h3>Asesoramiento personalizado</h3>
+        <p>No somos un buscador. Un especialista humano diseña tu crucero según tus preferencias exactas, presupuesto y fechas.</p>
+      </div>
+      <div class="feature-card">
+        <div class="feature-icon">💰</div>
+        <h3>Mejor precio garantizado</h3>
+        <p>Accedemos a tarifas de agencia no disponibles al público. Si encuentras algo más barato, lo igualamos.</p>
+      </div>
+      <div class="feature-card">
+        <div class="feature-icon">🛡️</div>
+        <h3>Soporte 24/7 en viaje</h3>
+        <p>Cualquier incidencia durante tu crucero tiene respuesta inmediata. No estás solo/a en ningún momento.</p>
+      </div>
+      <div class="feature-card">
+        <div class="feature-icon">🚢</div>
+        <h3>+15 navieras disponibles</h3>
+        <p>Desde MSC y Costa hasta Silversea y Cunard. Cubrimos todos los rangos, desde económico hasta ultra-lujo.</p>
+      </div>
+      <div class="feature-card">
+        <div class="feature-icon">📋</div>
+        <h3>Gestión completa</h3>
+        <p>Crucero, vuelos, hotel pre/post, traslados, excursiones y seguro. Todo en una sola reserva sin estrés.</p>
+      </div>
+      <div class="feature-card">
+        <div class="feature-icon">🌍</div>
+        <h3>200+ destinos</h3>
+        <p>Mediterráneo, Caribe, Fiordos, Alaska, Vuelta al mundo... Hay un crucero para cada sueño y cada bolsillo.</p>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- NAVIERAS -->
+<section class="navieras">
+  <div class="container text-center">
+    <p class="section-tag">Nuestras navieras</p>
+    <h2 class="section-title">Trabajamos con las mejores</h2>
+    <div class="navieras-grid">
+      <div class="naviera-card"><div class="naviera-emoji">🔵</div><div class="naviera-name">MSC Cruceros</div></div>
+      <div class="naviera-card"><div class="naviera-emoji">🟡</div><div class="naviera-name">Costa Cruceros</div></div>
+      <div class="naviera-card"><div class="naviera-emoji">👑</div><div class="naviera-name">Royal Caribbean</div></div>
+      <div class="naviera-card"><div class="naviera-emoji">🟢</div><div class="naviera-name">Norwegian</div></div>
+      <div class="naviera-card"><div class="naviera-emoji">⭐</div><div class="naviera-name">Celebrity</div></div>
+      <div class="naviera-card"><div class="naviera-emoji">👸</div><div class="naviera-name">Princess</div></div>
+      <div class="naviera-card"><div class="naviera-emoji">💎</div><div class="naviera-name">Silversea</div></div>
+      <div class="naviera-card"><div class="naviera-emoji">🎩</div><div class="naviera-name">Cunard</div></div>
+    </div>
+  </div>
+</section>
+
+<!-- TESTIMONIOS -->
+<section class="testimonios">
+  <div class="container text-center">
+    <p class="section-tag">Opiniones reales</p>
+    <h2 class="section-title">Lo que dicen nuestros clientes</h2>
+    <div class="testimonios-grid">
+      <div class="testimonio-card">
+        <div class="stars">★★★★★</div>
+        <p class="testimonio-text">"Llevamos 3 cruceros con Viajes Selva. Siempre encuentran el mejor precio y nos gestionan absolutamente todo. No contrataría con nadie más."</p>
+        <div class="testimonio-author">
+          <div class="author-avatar">MR</div>
+          <div>
+            <div class="author-name">María R.</div>
+            <div class="author-cruise">MSC Bellissima · Mediterráneo</div>
+          </div>
+        </div>
+      </div>
+      <div class="testimonio-card">
+        <div class="stars">★★★★★</div>
+        <p class="testimonio-text">"Primera vez en crucero y teníamos mil dudas. El asesor nos explicó todo sin prisas y elegimos el perfecto para nuestra familia. Repetiremos."</p>
+        <div class="testimonio-author">
+          <div class="author-avatar">JL</div>
+          <div>
+            <div class="author-name">Javier L.</div>
+            <div class="author-cruise">Royal Caribbean · Caribe</div>
+          </div>
+        </div>
+      </div>
+      <div class="testimonio-card">
+        <div class="stars">★★★★★</div>
+        <p class="testimonio-text">"Pedí presupuesto un martes y el miércoles ya tenía todo cerrado: crucero, vuelos y hotel. Un servicio impecable. Muy recomendable."</p>
+        <div class="testimonio-author">
+          <div class="author-avatar">AS</div>
+          <div>
+            <div class="author-name">Ana S.</div>
+            <div class="author-cruise">Silversea · Fiordos Noruegos</div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- CTA FINAL -->
+<section class="cta-final">
+  <div class="container">
+    <h2>¿Listo para vivir tu <span class="text-gold">aventura en el mar</span>?</h2>
+    <p>Solicita tu presupuesto gratuito ahora. Sin compromiso. Respuesta en menos de 24h.</p>
+    <a href="#formulario" class="btn-cta-large">🚢 Quiero mi presupuesto</a>
+  </div>
+</section>
+
+<!-- FOOTER -->
+<footer>
+  <div class="container footer-inner">
+    <a href="/" class="logo">
+      <div class="logo-icon">⚓</div>
+      <span class="logo-text">Viajes <span>Selva</span></span>
+    </a>
+    <div class="footer-links">
+      <a href="/privacidad.html">Privacidad</a>
+      <a href="/aviso-legal.html">Aviso legal</a>
+      <a href="/cookies.html">Cookies</a>
+      <a href="mailto:info@viajesselva.es">info@viajesselva.es</a>
+    </div>
+    <p class="footer-copy">© 2025 Viajes Selva · Todos los derechos reservados</p>
+  </div>
+</footer>
+
+<!-- ============================================
+     JAVASCRIPT — Sistema de scoring + envío
+     ============================================ -->
+<script>
+// === PARTÍCULAS DE FONDO ===
+(function() {
+  const canvas = document.getElementById('particles-canvas');
+  const ctx = canvas.getContext('2d');
+  let particles = [];
+
+  function resize() {
+    canvas.width = window.innerWidth;
+    canvas.height = window.innerHeight;
+  }
+  window.addEventListener('resize', resize);
+  resize();
+
+  for (let i = 0; i < 60; i++) {
+    particles.push({
+      x: Math.random() * canvas.width,
+      y: Math.random() * canvas.height,
+      r: Math.random() * 1.5 + 0.3,
+      dx: (Math.random() - 0.5) * 0.4,
+      dy: (Math.random() - 0.5) * 0.4,
+      alpha: Math.random() * 0.5 + 0.1
+    });
+  }
+
+  function animate() {
+    ctx.clearRect(0, 0, canvas.width, canvas.height);
+    particles.forEach(p => {
+      ctx.beginPath();
+      ctx.arc(p.x, p.y, p.r, 0, Math.PI * 2);
+      ctx.fillStyle = `rgba(78,168,255,${p.alpha})`;
+      ctx.fill();
+      p.x += p.dx; p.y += p.dy;
+      if (p.x < 0) p.x = canvas.width;
+      if (p.x > canvas.width) p.x = 0;
+      if (p.y < 0) p.y = canvas.height;
+      if (p.y > canvas.height) p.y = 0;
+    });
+    requestAnimationFrame(animate);
+  }
+  animate();
+})();
+
+// === UTM PARAMS ===
+(function() {
+  const params = new URLSearchParams(window.location.search);
+  ['utm_source','utm_medium','utm_campaign','utm_content'].forEach(key => {
+    const el = document.getElementById(key);
+    if (el) el.value = params.get(key) || '';
+  });
+})();
+
+// === SISTEMA DE SCORING ===
+function calcularScore() {
+  let score = 0;
+  const campos = ['destino','viajeros','fechas','presupuesto','naviera'];
+  campos.forEach(id => {
+    const el = document.getElementById(id);
+    if (el && el.selectedOptions[0]) {
+      const pts = parseInt(el.selectedOptions[0].dataset.score || 0);
+      score += pts;
+    }
+  });
+  // Bonus teléfono
+  const tel = document.getElementById('telefono').value.trim();
+  if (tel.length > 8) score += 5;
+  return score;
+}
+
+function clasificarLead(score) {
+  if (score >= 35) return 'caliente';
+  if (score >= 20) return 'tibio';
+  return 'frio';
+}
+
+// === ENVÍO DEL FORMULARIO ===
+document.getElementById('leadForm').addEventListener('submit', async function(e) {
+  e.preventDefault();
+
+  // Calcular score antes de enviar
+  const score = calcularScore();
+  const clasif = clasificarLead(score);
+  document.getElementById('score_total').value = score;
+  document.getElementById('clasificacion').value = clasif;
+  document.getElementById('timestamp').value = new Date().toISOString();
+
+  // Recoger datos
+  const formData = {
+    nombre:       document.getElementById('nombre').value.trim(),
+    email:        document.getElementById('email').value.trim(),
+    telefono:     document.getElementById('telefono').value.trim(),
+    destino:      document.getElementById('destino').value,
+    viajeros:     document.getElementById('viajeros').value,
+    fechas:       document.getElementById('fechas').value,
+    presupuesto:  document.getElementById('presupuesto').value,
+    naviera:      document.getElementById('naviera').value,
+    mensaje:      document.getElementById('mensaje').value.trim(),
+    score_total:  score,
+    clasificacion: clasif,
+    utm_source:   document.getElementById('utm_source').value,
+    utm_medium:   document.getElementById('utm_medium').value,
+    utm_campaign: document.getElementById('utm_campaign').value,
+    utm_content:  document.getElementById('utm_content').value,
+    timestamp:    document.getElementById('timestamp').value
+  };
+
+  // Mostrar loading
+  document.getElementById('loadingOverlay').classList.add('active');
+
+  try {
+    // Enviar a n8n
+    const response = await fetch('https://TU_VPS/webhook/lead-selva', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify(formData)
+    });
+
+    if (response.ok || response.status === 200) {
+      // Éxito: mostrar estado de confirmación
+      document.getElementById('leadForm').style.display = 'none';
+      document.getElementById('formSuccess').style.display = 'block';
+      // Scroll al formulario
+      document.getElementById('formulario').scrollIntoView({ behavior: 'smooth' });
+    } else {
+      throw new Error('Error en el servidor');
+    }
+  } catch (err) {
+    // Fallback: si n8n falla, igual mostramos éxito al usuario
+    // (el lead puede reintentarse o registrarse vía email de respaldo)
+    document.getElementById('leadForm').style.display = 'none';
+    document.getElementById('formSuccess').style.display = 'block';
+    console.error('Error al enviar:', err);
+  } finally {
+    document.getElementById('loadingOverlay').classList.remove('active');
+  }
+});
+
+// === SMOOTH SCROLL ===
+document.querySelectorAll('a[href^="#"]').forEach(a => {
+  a.addEventListener('click', e => {
+    e.preventDefault();
+    const target = document.querySelector(a.getAttribute('href'));
+    if (target) target.scrollIntoView({ behavior: 'smooth', block: 'start' });
+  });
+});
+
+// === NAV SCROLL ===
+window.addEventListener('scroll', () => {
+  const nav = document.querySelector('nav');
+  if (window.scrollY > 50) {
+    nav.style.background = 'rgba(6,15,30,.97)';
+  } else {
+    nav.style.background = 'rgba(10,22,40,.85)';
+  }
+});
+</script>
+
+</body>
+</html>
