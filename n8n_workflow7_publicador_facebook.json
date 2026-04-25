@@ -11,9 +11,9 @@
     },
     {
       "parameters": {
-        "command": "curl -fsSL -o /opt/guiacrucerista/scripts/playwright_facebook_grupos.js https://raw.githubusercontent.com/guiacrucerista-del/cruceros-viajesselva/main/playwright_facebook_grupos.js && echo 'Script actualizado OK'"
+        "command": "curl -fsSL -o /opt/guiacrucerista/scripts/playwright_facebook_grupos.js https://raw.githubusercontent.com/guiacrucerista-del/cruceros-viajesselva/main/playwright_facebook_grupos.js && echo OK"
       },
-      "id": "auto-update-script",
+      "id": "auto-update",
       "name": "Auto-Update Script Playwright",
       "type": "n8n-nodes-base.executeCommand",
       "typeVersion": 1,
@@ -31,17 +31,17 @@
       "name": "Sheets - Leer Cola",
       "type": "n8n-nodes-base.googleSheets",
       "typeVersion": 4,
-      "position": [240, 400]
+      "position": [460, 400]
     },
     {
       "parameters": {
-        "jsCode": "const item = $input.item.json;\nconst texto = item['Texto'] || '';\nconst naviera = item['Naviera'] || 'General';\nconst destino = item['Destino'] || '';\nconst publicarPagina = (item['Publicar Pagina'] || 'SI').toUpperCase() === 'SI';\nconst publicarMSC = (item['Grupo MSC'] || 'SI').toUpperCase() === 'SI';\nconst publicarRCL = (item['Grupo Royal'] || 'SI').toUpperCase() === 'SI';\nconst publicarCosta = (item['Grupo Costa'] || 'SI').toUpperCase() === 'SI';\nconst slug = `${naviera}-${destino}`.toLowerCase().replace(/\\s+/g, '-').replace(/[^a-z0-9-]/g, '');\nconst fechaHoy = new Date().toISOString().split('T')[0];\nconst utm = `utm_medium=social&utm_campaign=${slug}&utm_content=${fechaHoy}`;\nreturn [{ json: {\n  texto,\n  naviera,\n  destino,\n  publicarPagina,\n  publicarMSC,\n  publicarRCL,\n  publicarCosta,\n  urlPagina: `https://guiacrucerista.com?utm_source=fb-pagina&${utm}`,\n  urlMSC: `https://guiacrucerista.com?utm_source=fb-grupo-msc&${utm}`,\n  urlRoyal: `https://guiacrucerista.com?utm_source=fb-grupo-royal&${utm}`,\n  urlCosta: `https://guiacrucerista.com?utm_source=fb-grupo-costa&${utm}`,\n  fechaHoy,\n  rowNumber: item['_rowNumber'] || 2\n}}];"
+        "jsCode": "const item = $input.item.json;\nconst naviera = item['Naviera'] || 'General';\nconst destino = item['Destino'] || '';\nconst slug = (naviera + '-' + destino).toLowerCase().replace(/\\s+/g, '-').replace(/[^a-z0-9-]/g, '');\nconst fechaHoy = new Date().toISOString().split('T')[0];\nconst utm = 'utm_medium=social&utm_campaign=' + slug + '&utm_content=' + fechaHoy;\nreturn [{ json: {\n  texto: item['Texto'] || '',\n  naviera,\n  destino,\n  publicarPagina: (item['Publicar Pagina'] || 'SI').toUpperCase() === 'SI',\n  urlPagina:  'https://guiacrucerista.com?utm_source=fb-pagina&' + utm,\n  urlMSC:     'https://guiacrucerista.com?utm_source=fb-grupo-msc&' + utm,\n  urlRoyal:   'https://guiacrucerista.com?utm_source=fb-grupo-royal&' + utm,\n  urlCosta:   'https://guiacrucerista.com?utm_source=fb-grupo-costa&' + utm,\n  fechaHoy,\n  rowNumber: item['_rowNumber'] || 2\n}}];"
       },
       "id": "preparar-post",
       "name": "Preparar Post",
       "type": "n8n-nodes-base.code",
       "typeVersion": 2,
-      "position": [460, 400]
+      "position": [680, 400]
     },
     {
       "parameters": {
@@ -51,7 +51,7 @@
       "name": "IF Pagina",
       "type": "n8n-nodes-base.if",
       "typeVersion": 2,
-      "position": [680, 400]
+      "position": [900, 400]
     },
     {
       "parameters": {
@@ -59,15 +59,15 @@
         "method": "POST",
         "sendBody": true,
         "bodyParameters": { "parameters": [
-          { "name": "message", "value": "={{ $('Preparar Post').item.json.texto }}" },
+          { "name": "message",      "value": "={{ $('Preparar Post').item.json.texto }}" },
           { "name": "access_token", "value": "EAAUOpOCfmP8BRe9zrGZAxsugMjZC49Kj7V37gpNTda7UV92SbWrLusaEZCDnvYUIHL2NzZAGdCaxlHkk3ZBKdIuij5yDvn5JH6f21AgQtZC8b1jLy94FRUqVAvGkCLADlDTnXtK4NmAkwKOE8TZAa5eFZCw25A2gGk5Gb1uOiTJsh0yWbpvsXXSIcxl2DY4Gy9MhkZAaOM80vxWEazSZA7AvFOi1BrNkUvis0dV9Flt6nv4tCJtlBQSdb3vxQR3XtpnkVWXZAowBzjgLJxmHIiqRms2tJ9ZAUwZDZD" }
         ]}
       },
       "id": "post-pagina",
-      "name": "POST Página",
+      "name": "POST Pagina",
       "type": "n8n-nodes-base.httpRequest",
       "typeVersion": 4.2,
-      "position": [900, 260]
+      "position": [1120, 260]
     },
     {
       "parameters": {
@@ -75,41 +75,45 @@
         "method": "POST",
         "sendBody": true,
         "bodyParameters": { "parameters": [
-          { "name": "message", "value": "={{ $('Preparar Post').item.json.urlPagina }}" },
+          { "name": "message",      "value": "={{ $('Preparar Post').item.json.urlPagina }}" },
           { "name": "access_token", "value": "EAAUOpOCfmP8BRe9zrGZAxsugMjZC49Kj7V37gpNTda7UV92SbWrLusaEZCDnvYUIHL2NzZAGdCaxlHkk3ZBKdIuij5yDvn5JH6f21AgQtZC8b1jLy94FRUqVAvGkCLADlDTnXtK4NmAkwKOE8TZAa5eFZCw25A2gGk5Gb1uOiTJsh0yWbpvsXXSIcxl2DY4Gy9MhkZAaOM80vxWEazSZA7AvFOi1BrNkUvis0dV9Flt6nv4tCJtlBQSdb3vxQR3XtpnkVWXZAowBzjgLJxmHIiqRms2tJ9ZAUwZDZD" }
         ]}
       },
       "id": "comentar-pagina",
-      "name": "Comentar URL Página",
+      "name": "Comentar URL Pagina",
       "type": "n8n-nodes-base.httpRequest",
       "typeVersion": 4.2,
-      "position": [1120, 260]
+      "position": [1340, 260]
     },
     {
       "parameters": {
-        "command": "=cd /opt/guiacrucerista/scripts && source .env && node playwright_facebook_grupos.js --text '{{ $('Preparar Post').item.json.texto.replace(/'/g, "'\\''") }}' --url '{{ $('Preparar Post').item.json.urlMSC }}' --groups '811550587597467,1116074769675601,1882092085657041'"
+        "jsCode": "const p = $('Preparar Post').item.json;\nconst data = {\n  text:   p.texto,\n  url:    p.urlMSC,\n  groups: ['811550587597467','1116074769675601','1882092085657041']\n};\nconst fs = require('fs');\nfs.writeFileSync('/tmp/fb_post.json', JSON.stringify(data));\nreturn [{ json: { inputFile: '/tmp/fb_post.json', texto: p.texto } }];"
+      },
+      "id": "write-post-file",
+      "name": "Escribir Archivo Post",
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [1120, 540]
+    },
+    {
+      "parameters": {
+        "command": "cd /opt/guiacrucerista/scripts && source .env && node playwright_facebook_grupos.js --input /tmp/fb_post.json"
       },
       "id": "playwright-grupos",
       "name": "Playwright — Publicar en Grupos",
       "type": "n8n-nodes-base.executeCommand",
       "typeVersion": 1,
-      "position": [1340, 400]
+      "position": [1340, 540]
     },
     {
       "parameters": {
-        "jsCode": "const raw = $input.item.json.stdout || '{}';
-try {
-  const result = JSON.parse(raw);
-  return [{ json: { playwrightResult: result, success: result.success } }];
-} catch (e) {
-  return [{ json: { playwrightResult: null, success: false, parseError: e.message } }];
-}"
+        "jsCode": "const raw = $input.item.json.stdout || '{}';\ntry {\n  const r = JSON.parse(raw);\n  return [{ json: { playwrightOK: r.success, grupos: r.groups } }];\n} catch(e) {\n  return [{ json: { playwrightOK: false, error: e.message } }];\n}"
       },
       "id": "parse-playwright",
       "name": "Parsear Resultado Playwright",
       "type": "n8n-nodes-base.code",
       "typeVersion": 2,
-      "position": [1560, 400]
+      "position": [1560, 540]
     },
     {
       "parameters": {
@@ -129,54 +133,50 @@ try {
       "name": "Sheets - Marcar Publicado",
       "type": "n8n-nodes-base.googleSheets",
       "typeVersion": 4,
-      "position": [3320, 400]
+      "position": [1780, 400]
     },
     {
       "parameters": {
         "chatId": "6724881174",
-        "text": "✅ *Publicado - GuiaCrucerista*\n\n📣 {{ $('Preparar Post').item.json.naviera }} — {{ $('Preparar Post').item.json.destino }}\n\n📍 Destinos:\n✅ Página GuiaCrucerista.com\n✅ Grupos Facebook (MSC / Royal / Costa)\n\n📊 https://docs.google.com/spreadsheets/d/14QcT_BFRUGjP5Z69sdoAPYfNtRlrJ1u2cDsmIP4CVWk\n\n🤖 _agente.metricastudio.eu_",
+        "text": "OK *GuiaCrucerista publicado*\n\nNaviera: {{ $('Preparar Post').item.json.naviera }}\nDestino: {{ $('Preparar Post').item.json.destino }}\n\nPagina Facebook: publicada\nGrupos (Playwright): publicados\n\nhttps://docs.google.com/spreadsheets/d/14QcT_BFRUGjP5Z69sdoAPYfNtRlrJ1u2cDsmIP4CVWk",
         "additionalFields": { "parse_mode": "Markdown" }
       },
       "id": "telegram-confirm",
       "name": "Telegram - Confirmar",
       "type": "n8n-nodes-base.telegram",
       "typeVersion": 1.2,
-      "position": [3540, 400],
+      "position": [2000, 400],
       "credentials": { "telegramApi": { "id": "telegram-creds", "name": "Telegram Bot GuiaCrucerista" } }
     }
   ],
   "connections": {
-    "Manual Trigger": { "main": [[{ "node": "Auto-Update Script Playwright", "type": "main", "index": 0 }]] },
-    "Auto-Update Script Playwright": { "main": [[{ "node": "Sheets - Leer Cola", "type": "main", "index": 0 }]] },
-    "Sheets - Leer Cola": { "main": [[{ "node": "Preparar Post", "type": "main", "index": 0 }]] },
-    "Preparar Post": { "main": [[{ "node": "IF Pagina", "type": "main", "index": 0 }]] },
+    "Manual Trigger":                   { "main": [[{ "node": "Auto-Update Script Playwright", "type": "main", "index": 0 }]] },
+    "Auto-Update Script Playwright":    { "main": [[{ "node": "Sheets - Leer Cola",           "type": "main", "index": 0 }]] },
+    "Sheets - Leer Cola":               { "main": [[{ "node": "Preparar Post",                "type": "main", "index": 0 }]] },
+    "Preparar Post":                    { "main": [[{ "node": "IF Pagina",                    "type": "main", "index": 0 }]] },
     "IF Pagina": {
       "main": [
-        [{ "node": "POST Página", "type": "main", "index": 0 }],
-        [{ "node": "Playwright — Publicar en Grupos", "type": "main", "index": 0 }]
+        [{ "node": "POST Pagina",          "type": "main", "index": 0 }],
+        [{ "node": "Escribir Archivo Post","type": "main", "index": 0 }]
       ]
     },
-    "POST Página": { "main": [[{ "node": "Comentar URL Página", "type": "main", "index": 0 }]] },
-    "Comentar URL Página": { "main": [[{ "node": "Playwright — Publicar en Grupos", "type": "main", "index": 0 }]] },
-    "Playwright — Publicar en Grupos": { "main": [[{ "node": "Parsear Resultado Playwright", "type": "main", "index": 0 }]] },
-    "Parsear Resultado Playwright": { "main": [[{ "node": "Sheets - Marcar Publicado", "type": "main", "index": 0 }]] },
-    "Sheets - Marcar Publicado": { "main": [[{ "node": "Telegram - Confirmar", "type": "main", "index": 0 }]] }
+    "POST Pagina":                      { "main": [[{ "node": "Comentar URL Pagina",      "type": "main", "index": 0 }]] },
+    "Comentar URL Pagina":              { "main": [[{ "node": "Escribir Archivo Post",     "type": "main", "index": 0 }]] },
+    "Escribir Archivo Post":            { "main": [[{ "node": "Playwright — Publicar en Grupos", "type": "main", "index": 0 }]] },
+    "Playwright — Publicar en Grupos":  { "main": [[{ "node": "Parsear Resultado Playwright",   "type": "main", "index": 0 }]] },
+    "Parsear Resultado Playwright":     { "main": [[{ "node": "Sheets - Marcar Publicado",       "type": "main", "index": 0 }]] },
+    "Sheets - Marcar Publicado":        { "main": [[{ "node": "Telegram - Confirmar",            "type": "main", "index": 0 }]] }
   },
   "settings": { "executionOrder": "v1", "saveManualExecutions": true },
   "meta": {
-    "NOTA_GRUPOS": "Para publicar en grupos necesitas: 1) User Access Token (no Page Token) — obtenerlo en Graph API Explorer > Obtener identificador de usuario con permiso publish_to_groups. 2) Instalar la app en cada grupo: entra al grupo > Configuración > Aplicaciones > añade tu app.",
-    "facebookAppId": "1423476189534463",
-    "facebookAppSecret": "871cabbc123c5a0b38c31d422e4692dc",
-    "facebookPageId": "360998217104895",
+    "facebookPageId":    "360998217104895",
     "facebookPageToken": "EAAUOpOCfmP8BRe9zrGZAxsugMjZC49Kj7V37gpNTda7UV92SbWrLusaEZCDnvYUIHL2NzZAGdCaxlHkk3ZBKdIuij5yDvn5JH6f21AgQtZC8b1jLy94FRUqVAvGkCLADlDTnXtK4NmAkwKOE8TZAa5eFZCw25A2gGk5Gb1uOiTJsh0yWbpvsXXSIcxl2DY4Gy9MhkZAaOM80vxWEazSZA7AvFOi1BrNkUvis0dV9Flt6nv4tCJtlBQSdb3vxQR3XtpnkVWXZAowBzjgLJxmHIiqRms2tJ9ZAUwZDZD",
-    "userAccessToken": "TU_USER_ACCESS_TOKEN_AQUI",
-    "groupMSC": "811550587597467",
-    "groupRoyalCaribbean": "1116074769675601",
-    "groupCosta": "1882092085657041",
-    "telegramToken": "8546910859:AAEZeAFZKYRXnJckiBplRQqB3ssIGFhgkso",
-    "telegramChatId": "6724881174",
-    "googleSheetId": "14QcT_BFRUGjP5Z69sdoAPYfNtRlrJ1u2cDsmIP4CVWk",
-    "vps": "agente.metricastudio.eu"
+    "groupMSC":          "811550587597467",
+    "groupRoyal":        "1116074769675601",
+    "groupCosta":        "1882092085657041",
+    "telegramChatId":    "6724881174",
+    "googleSheetId":     "14QcT_BFRUGjP5Z69sdoAPYfNtRlrJ1u2cDsmIP4CVWk",
+    "vps":               "agente.metricastudio.eu"
   },
-  "tags": [{ "name": "guiacrucerista" }, { "name": "facebook" }, { "name": "grupos" }]
+  "tags": [{ "name": "guiacrucerista" }, { "name": "facebook" }]
 }
