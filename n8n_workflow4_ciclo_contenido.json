@@ -1,0 +1,142 @@
+{
+  "name": "GuiaCrucerista — Ciclo Contenido",
+  "nodes": [
+    {
+      "parameters": {
+        "rule": {
+          "interval": [
+            {
+              "field": "weeks",
+              "weeksInterval": 1,
+              "triggerAtDay": [2],
+              "triggerAtHour": 9,
+              "triggerAtMinute": 0
+            }
+          ]
+        }
+      },
+      "id": "cron-ciclo",
+      "name": "Cron - Martes 9am",
+      "type": "n8n-nodes-base.scheduleTrigger",
+      "typeVersion": 1.1,
+      "position": [240, 300]
+    },
+    {
+      "parameters": {
+        "operation": "getAll",
+        "documentId": {
+          "__rl": true,
+          "value": "14QcT_BFRUGjP5Z69sdoAPYfNtRlrJ1u2cDsmIP4CVWk",
+          "mode": "id"
+        },
+        "sheetName": { "__rl": true, "value": "Ideas de Contenido", "mode": "name" },
+        "filters": {
+          "conditions": [
+            {
+              "keyName": "Estado",
+              "condition": "equals",
+              "keyValue": "Pendiente"
+            }
+          ]
+        },
+        "options": { "returnFirstMatch": true }
+      },
+      "id": "sheets-ideas",
+      "name": "Sheets - Siguiente idea",
+      "type": "n8n-nodes-base.googleSheets",
+      "typeVersion": 4,
+      "position": [460, 300]
+    },
+    {
+      "parameters": {
+        "url": "https://windsor.ai/api/v1/fetch",
+        "method": "GET",
+        "sendQuery": true,
+        "queryParameters": {
+          "parameters": [
+            { "name": "api_key", "value": "f0a3576c428dbbf6be98ffc680022afc0306" },
+            { "name": "connector", "value": "google_search_console" },
+            { "name": "date_preset", "value": "last_30_days" },
+            { "name": "fields", "value": "query,clicks,impressions,ctr,position" },
+            { "name": "sort", "value": "-clicks" },
+            { "name": "limit", "value": "5" }
+          ]
+        }
+      },
+      "id": "windsor-queries",
+      "name": "Windsor.ai - Top Queries",
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.2,
+      "position": [460, 460]
+    },
+    {
+      "parameters": {
+        "jsCode": "const idea = $('Sheets - Siguiente idea').item.json;\nconst queries = $('Windsor.ai - Top Queries').all();\n\nconst topQuery = queries.length > 0 ? queries[0].json.query : 'cruceros mediterráneo';\nconst topClicks = queries.length > 0 ? queries[0].json.clicks : 'N/A';\n\nconst titulo = idea['Titulo'] || 'Nuevo artículo de cruceros';\nconst tipo = idea['Tipo'] || 'Blog';\nconst naviera = idea['Naviera'] || 'General';\nconst deadline = idea['Deadline'] || 'Esta semana';\n\nconst utmUrl = `https://guiacrucerista.com?utm_source=telegram&utm_medium=planning&utm_campaign=ciclo-contenido-${new Date().toISOString().split('T')[0]}`;\n\nreturn [{\n  json: {\n    titulo,\n    tipo,\n    naviera,\n    deadline,\n    top_query: topQuery,\n    top_clicks: topClicks,\n    utm_planning: utmUrl,\n    semana: new Date().toISOString().split('T')[0]\n  }\n}];"
+      },
+      "id": "build-plan",
+      "name": "Construir Plan Semanal",
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [680, 380]
+    },
+    {
+      "parameters": {
+        "chatId": "6724881174",
+        "text": "📅 *Plan de Contenido Semanal - GuiaCrucerista*\n\n📝 *Próximo artículo:*\n{{ $json.titulo }}\n\n🏷 Tipo: {{ $json.tipo }}\n🚢 Naviera: {{ $json.naviera }}\n📆 Deadline: {{ $json.deadline }}\n\n🔍 *Query tendencia esta semana:*\n`{{ $json.top_query }}` ({{ $json.top_clicks }} clics)\n\n🤖 _Generado por agente.metricastudio.eu_",
+        "additionalFields": { "parse_mode": "Markdown" }
+      },
+      "id": "telegram-plan",
+      "name": "Telegram - Plan Semanal",
+      "type": "n8n-nodes-base.telegram",
+      "typeVersion": 1.2,
+      "position": [900, 380],
+      "credentials": {
+        "telegramApi": {
+          "id": "telegram-creds",
+          "name": "Telegram Bot GuiaCrucerista"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "operation": "update",
+        "documentId": {
+          "__rl": true,
+          "value": "14QcT_BFRUGjP5Z69sdoAPYfNtRlrJ1u2cDsmIP4CVWk",
+          "mode": "id"
+        },
+        "sheetName": { "__rl": true, "value": "Ideas de Contenido", "mode": "name" },
+        "columns": {
+          "mappingMode": "defineBelow",
+          "value": {
+            "Estado": "En Progreso",
+            "Semana Asignada": "={{ $json.semana }}"
+          }
+        }
+      },
+      "id": "sheets-update",
+      "name": "Sheets - Marcar En Progreso",
+      "type": "n8n-nodes-base.googleSheets",
+      "typeVersion": 4,
+      "position": [900, 540]
+    }
+  ],
+  "connections": {
+    "Cron - Martes 9am": { "main": [[{ "node": "Sheets - Siguiente idea", "type": "main", "index": 0 }, { "node": "Windsor.ai - Top Queries", "type": "main", "index": 0 }]] },
+    "Sheets - Siguiente idea": { "main": [[{ "node": "Construir Plan Semanal", "type": "main", "index": 0 }]] },
+    "Windsor.ai - Top Queries": { "main": [[{ "node": "Construir Plan Semanal", "type": "main", "index": 0 }]] },
+    "Construir Plan Semanal": { "main": [[{ "node": "Telegram - Plan Semanal", "type": "main", "index": 0 }, { "node": "Sheets - Marcar En Progreso", "type": "main", "index": 0 }]] }
+  },
+  "settings": {
+    "executionOrder": "v1",
+    "saveManualExecutions": true
+  },
+  "meta": {
+    "telegramToken": "8546910859:AAEZeAFZKYRXnJckiBplRQqB3ssIGFhgkso",
+    "telegramChatId": "6724881174",
+    "windsorApiKey": "f0a3576c428dbbf6be98ffc680022afc0306",
+    "vps": "agente.metricastudio.eu",
+    "googleSheetId": "14QcT_BFRUGjP5Z69sdoAPYfNtRlrJ1u2cDsmIP4CVWk"
+  },
+  "tags": [{ "name": "guiacrucerista" }, { "name": "contenido" }, { "name": "planificacion" }]
+}

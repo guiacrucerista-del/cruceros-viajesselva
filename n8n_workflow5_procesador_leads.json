@@ -1,0 +1,110 @@
+{
+  "name": "GuiaCrucerista — Procesador Leads",
+  "nodes": [
+    {
+      "parameters": {
+        "httpMethod": "POST",
+        "path": "lead-crucero",
+        "responseMode": "responseNode",
+        "options": {}
+      },
+      "id": "webhook-lead",
+      "name": "Webhook - Nuevo Lead",
+      "type": "n8n-nodes-base.webhook",
+      "typeVersion": 2,
+      "position": [240, 300],
+      "webhookId": "lead-processor-guiacrucerista"
+    },
+    {
+      "parameters": {
+        "jsCode": "const body = $input.item.json.body || $input.item.json;\n\nconst nombre = body.nombre || body.name || 'Viajero';\nconst email = body.email || '';\nconst telefono = body.telefono || body.phone || '';\nconst naviera = body.naviera || body.cruise_line || 'No especificada';\nconst destino = body.destino || body.destination || 'No especificado';\nconst presupuesto = body.presupuesto || body.budget || 'No especificado';\nconst fechaViaje = body.fecha_viaje || body.travel_date || 'Flexible';\nconst origen = body.utm_source || body.source || 'directo';\nconst campaign = body.utm_campaign || 'organico';\n\nconst leadScore = (\n  (email ? 20 : 0) +\n  (telefono ? 25 : 0) +\n  (naviera !== 'No especificada' ? 20 : 0) +\n  (presupuesto !== 'No especificado' ? 20 : 0) +\n  (fechaViaje !== 'Flexible' ? 15 : 0)\n);\n\nconst prioridad = leadScore >= 70 ? '🔥 ALTA' : leadScore >= 40 ? '⚡ MEDIA' : '📌 BAJA';\n\nreturn [{\n  json: {\n    nombre, email, telefono,\n    naviera, destino, presupuesto, fechaViaje,\n    origen, campaign,\n    lead_score: leadScore,\n    prioridad,\n    fecha_registro: new Date().toISOString(),\n    lead_id: `GC-LEAD-${Date.now()}`\n  }\n}];"
+      },
+      "id": "process-lead",
+      "name": "Procesar y Puntuar Lead",
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [460, 300]
+    },
+    {
+      "parameters": {
+        "operation": "append",
+        "documentId": {
+          "__rl": true,
+          "value": "14QcT_BFRUGjP5Z69sdoAPYfNtRlrJ1u2cDsmIP4CVWk",
+          "mode": "id"
+        },
+        "sheetName": { "__rl": true, "value": "Leads Cruceros", "mode": "name" },
+        "columns": {
+          "mappingMode": "defineBelow",
+          "value": {
+            "Lead ID": "={{ $json.lead_id }}",
+            "Fecha": "={{ $json.fecha_registro }}",
+            "Nombre": "={{ $json.nombre }}",
+            "Email": "={{ $json.email }}",
+            "Teléfono": "={{ $json.telefono }}",
+            "Naviera": "={{ $json.naviera }}",
+            "Destino": "={{ $json.destino }}",
+            "Presupuesto": "={{ $json.presupuesto }}",
+            "Fecha Viaje": "={{ $json.fechaViaje }}",
+            "Score": "={{ $json.lead_score }}",
+            "Prioridad": "={{ $json.prioridad }}",
+            "Origen": "={{ $json.origen }}",
+            "Campaña": "={{ $json.campaign }}"
+          }
+        }
+      },
+      "id": "sheets-lead",
+      "name": "Google Sheets - Registrar Lead",
+      "type": "n8n-nodes-base.googleSheets",
+      "typeVersion": 4,
+      "position": [680, 300]
+    },
+    {
+      "parameters": {
+        "chatId": "6724881174",
+        "text": "🎯 *¡NUEVO LEAD! GuiaCrucerista*\n\n👤 Nombre: {{ $json.nombre }}\n📧 Email: {{ $json.email }}\n📱 Tel: {{ $json.telefono }}\n🚢 Naviera: {{ $json.naviera }}\n🌍 Destino: {{ $json.destino }}\n💰 Presupuesto: {{ $json.presupuesto }}\n📅 Fecha viaje: {{ $json.fechaViaje }}\n\n⭐ *Score: {{ $json.lead_score }}/100 — {{ $json.prioridad }}*\n📣 Fuente: {{ $json.origen }} / {{ $json.campaign }}\n🆔 ID: `{{ $json.lead_id }}`\n\n📊 Ver todos los leads:\nhttps://docs.google.com/spreadsheets/d/14QcT_BFRUGjP5Z69sdoAPYfNtRlrJ1u2cDsmIP4CVWk",
+        "additionalFields": { "parse_mode": "Markdown" }
+      },
+      "id": "telegram-lead",
+      "name": "Telegram - Notificar Lead",
+      "type": "n8n-nodes-base.telegram",
+      "typeVersion": 1.2,
+      "position": [900, 200],
+      "credentials": {
+        "telegramApi": {
+          "id": "telegram-creds",
+          "name": "Telegram Bot GuiaCrucerista"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "respondWith": "json",
+        "responseBody": "={{ JSON.stringify({ success: true, lead_id: $json.lead_id, score: $json.lead_score, prioridad: $json.prioridad }) }}"
+      },
+      "id": "response-lead",
+      "name": "Responder Webhook",
+      "type": "n8n-nodes-base.respondToWebhook",
+      "typeVersion": 1,
+      "position": [900, 420]
+    }
+  ],
+  "connections": {
+    "Webhook - Nuevo Lead": { "main": [[{ "node": "Procesar y Puntuar Lead", "type": "main", "index": 0 }]] },
+    "Procesar y Puntuar Lead": { "main": [[{ "node": "Google Sheets - Registrar Lead", "type": "main", "index": 0 }]] },
+    "Google Sheets - Registrar Lead": { "main": [[{ "node": "Telegram - Notificar Lead", "type": "main", "index": 0 }, { "node": "Responder Webhook", "type": "main", "index": 0 }]] }
+  },
+  "settings": {
+    "executionOrder": "v1",
+    "saveManualExecutions": true
+  },
+  "meta": {
+    "telegramToken": "8546910859:AAEZeAFZKYRXnJckiBplRQqB3ssIGFhgkso",
+    "telegramChatId": "6724881174",
+    "windsorApiKey": "f0a3576c428dbbf6be98ffc680022afc0306",
+    "vps": "agente.metricastudio.eu",
+    "googleSheetId": "14QcT_BFRUGjP5Z69sdoAPYfNtRlrJ1u2cDsmIP4CVWk",
+    "webhookUrl": "https://agente.metricastudio.eu/webhook/lead-crucero"
+  },
+  "tags": [{ "name": "guiacrucerista" }, { "name": "leads" }, { "name": "crm" }]
+}

@@ -1,0 +1,142 @@
+{
+  "name": "GuiaCrucerista — Ofertas por Naviera",
+  "nodes": [
+    {
+      "parameters": {
+        "rule": {
+          "interval": [
+            {
+              "field": "weeks",
+              "weeksInterval": 1,
+              "triggerAtDay": [4],
+              "triggerAtHour": 10,
+              "triggerAtMinute": 0
+            }
+          ]
+        }
+      },
+      "id": "cron-ofertas",
+      "name": "Cron - Jueves 10am",
+      "type": "n8n-nodes-base.scheduleTrigger",
+      "typeVersion": 1.1,
+      "position": [240, 300]
+    },
+    {
+      "parameters": {
+        "operation": "getAll",
+        "documentId": {
+          "__rl": true,
+          "value": "14QcT_BFRUGjP5Z69sdoAPYfNtRlrJ1u2cDsmIP4CVWk",
+          "mode": "id"
+        },
+        "sheetName": { "__rl": true, "value": "Ofertas Navieras", "mode": "name" },
+        "filters": {
+          "conditions": [
+            {
+              "keyName": "Activa",
+              "condition": "equals",
+              "keyValue": "SI"
+            }
+          ]
+        },
+        "options": { "returnAllMatches": true }
+      },
+      "id": "sheets-ofertas",
+      "name": "Sheets - Leer Ofertas Activas",
+      "type": "n8n-nodes-base.googleSheets",
+      "typeVersion": 4,
+      "position": [460, 300]
+    },
+    {
+      "parameters": {
+        "jsCode": "const items = $input.all();\nconst results = [];\n\nfor (const item of items) {\n  const oferta = item.json;\n  const naviera = oferta['Naviera'] || 'Naviera';\n  const destino = oferta['Destino'] || 'Mediterráneo';\n  const precio = oferta['Precio desde'] || '---';\n  const duracion = oferta['Duración'] || 'N/A';\n  const salida = oferta['Fecha Salida'] || 'Flexible';\n  const descuento = oferta['Descuento'] || '';\n  const url = oferta['URL'] || 'https://guiacrucerista.com';\n\n  const slug = `${naviera}-${destino}`.toLowerCase().replace(/\\s+/g, '-').replace(/[^a-z0-9-]/g, '');\n  const utmUrl = `${url}?utm_source=telegram&utm_medium=oferta&utm_campaign=naviera-${slug}&utm_content=oferta-semanal`;\n\n  const emoji = {\n    'MSC': '🔵', 'Costa': '🟡', 'Royal Caribbean': '👑',\n    'Celebrity': '⭐', 'Norwegian': '🟢', 'Carnival': '🎉'\n  }[naviera] || '🚢';\n\n  results.push({\n    json: {\n      naviera, destino, precio, duracion, salida, descuento,\n      url_utm: utmUrl, emoji,\n      mensaje: `${emoji} *${naviera} — ${destino}*\\n\\n💰 Desde: *${precio}*\\n⏱ Duración: ${duracion}\\n📅 Salida: ${salida}${descuento ? `\\n🎁 Descuento: *${descuento}*` : ''}\\n\\n🔗 [Ver oferta completa](${utmUrl})\\n\\n_GuiaCrucerista.com — Tu guía de experto_`\n    }\n  });\n}\n\nreturn results;"
+      },
+      "id": "build-ofertas",
+      "name": "Construir Mensajes Ofertas",
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [680, 300]
+    },
+    {
+      "parameters": {
+        "chatId": "6724881174",
+        "text": "={{ $json.mensaje }}",
+        "additionalFields": {
+          "parse_mode": "Markdown",
+          "disable_web_page_preview": false
+        }
+      },
+      "id": "telegram-oferta",
+      "name": "Telegram - Publicar Oferta",
+      "type": "n8n-nodes-base.telegram",
+      "typeVersion": 1.2,
+      "position": [900, 300],
+      "credentials": {
+        "telegramApi": {
+          "id": "telegram-creds",
+          "name": "Telegram Bot GuiaCrucerista"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "operation": "update",
+        "documentId": {
+          "__rl": true,
+          "value": "14QcT_BFRUGjP5Z69sdoAPYfNtRlrJ1u2cDsmIP4CVWk",
+          "mode": "id"
+        },
+        "sheetName": { "__rl": true, "value": "Ofertas Navieras", "mode": "name" },
+        "columns": {
+          "mappingMode": "defineBelow",
+          "value": {
+            "Ultimo Envio": "={{ $now.toISO() }}",
+            "Envios Totales": "={{ ($json['Envios Totales'] || 0) + 1 }}"
+          }
+        }
+      },
+      "id": "sheets-update-oferta",
+      "name": "Sheets - Registrar Envío",
+      "type": "n8n-nodes-base.googleSheets",
+      "typeVersion": 4,
+      "position": [1120, 300]
+    },
+    {
+      "parameters": {
+        "chatId": "6724881174",
+        "text": "✅ *Resumen Ofertas Semanales*\n\n📨 {{ $items.length }} oferta(s) publicadas en el canal.\n\n📊 Ver tracking completo:\nhttps://docs.google.com/spreadsheets/d/14QcT_BFRUGjP5Z69sdoAPYfNtRlrJ1u2cDsmIP4CVWk\n\n🤖 _Enviado automáticamente desde agente.metricastudio.eu_",
+        "additionalFields": { "parse_mode": "Markdown" }
+      },
+      "id": "telegram-resumen",
+      "name": "Telegram - Resumen Final",
+      "type": "n8n-nodes-base.telegram",
+      "typeVersion": 1.2,
+      "position": [1120, 460],
+      "credentials": {
+        "telegramApi": {
+          "id": "telegram-creds",
+          "name": "Telegram Bot GuiaCrucerista"
+        }
+      }
+    }
+  ],
+  "connections": {
+    "Cron - Jueves 10am": { "main": [[{ "node": "Sheets - Leer Ofertas Activas", "type": "main", "index": 0 }]] },
+    "Sheets - Leer Ofertas Activas": { "main": [[{ "node": "Construir Mensajes Ofertas", "type": "main", "index": 0 }]] },
+    "Construir Mensajes Ofertas": { "main": [[{ "node": "Telegram - Publicar Oferta", "type": "main", "index": 0 }]] },
+    "Telegram - Publicar Oferta": { "main": [[{ "node": "Sheets - Registrar Envío", "type": "main", "index": 0 }]] },
+    "Sheets - Registrar Envío": { "main": [[{ "node": "Telegram - Resumen Final", "type": "main", "index": 0 }]] }
+  },
+  "settings": {
+    "executionOrder": "v1",
+    "saveManualExecutions": true
+  },
+  "meta": {
+    "telegramToken": "8546910859:AAEZeAFZKYRXnJckiBplRQqB3ssIGFhgkso",
+    "telegramChatId": "6724881174",
+    "windsorApiKey": "f0a3576c428dbbf6be98ffc680022afc0306",
+    "vps": "agente.metricastudio.eu",
+    "googleSheetId": "14QcT_BFRUGjP5Z69sdoAPYfNtRlrJ1u2cDsmIP4CVWk"
+  },
+  "tags": [{ "name": "guiacrucerista" }, { "name": "ofertas" }, { "name": "navieras" }]
+}

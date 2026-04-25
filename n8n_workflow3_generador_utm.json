@@ -1,0 +1,106 @@
+{
+  "name": "GuiaCrucerista — Generador UTM",
+  "nodes": [
+    {
+      "parameters": {
+        "httpMethod": "POST",
+        "path": "generar-utm",
+        "responseMode": "responseNode",
+        "options": {}
+      },
+      "id": "webhook-utm",
+      "name": "Webhook - Recibir datos",
+      "type": "n8n-nodes-base.webhook",
+      "typeVersion": 2,
+      "position": [240, 300],
+      "webhookId": "utm-generator-guiacrucerista"
+    },
+    {
+      "parameters": {
+        "jsCode": "const body = $input.item.json.body || $input.item.json;\n\nconst baseUrl = body.url || 'https://guiacrucerista.com';\nconst source = (body.source || 'telegram').toLowerCase().replace(/\\s+/g, '_');\nconst medium = (body.medium || 'social').toLowerCase().replace(/\\s+/g, '_');\nconst campaign = (body.campaign || 'cruceros-2025').toLowerCase().replace(/\\s+/g, '-');\nconst content = (body.content || '').toLowerCase().replace(/\\s+/g, '_');\nconst term = (body.term || '').toLowerCase().replace(/\\s+/g, '+');\n\nlet utmUrl = `${baseUrl}?utm_source=${source}&utm_medium=${medium}&utm_campaign=${campaign}`;\nif (content) utmUrl += `&utm_content=${content}`;\nif (term) utmUrl += `&utm_term=${term}`;\n\nconst shortCode = Math.random().toString(36).substring(2, 8).toUpperCase();\nconst trackingId = `GC-${shortCode}`;\n\nreturn [{\n  json: {\n    url_original: baseUrl,\n    url_utm: utmUrl,\n    utm_source: source,\n    utm_medium: medium,\n    utm_campaign: campaign,\n    utm_content: content,\n    utm_term: term,\n    tracking_id: trackingId,\n    fecha_creacion: new Date().toISOString(),\n    creado_por: 'n8n-agente.metricastudio.eu'\n  }\n}];"
+      },
+      "id": "build-utm",
+      "name": "Construir URL con UTM",
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [460, 300]
+    },
+    {
+      "parameters": {
+        "operation": "append",
+        "documentId": {
+          "__rl": true,
+          "value": "14QcT_BFRUGjP5Z69sdoAPYfNtRlrJ1u2cDsmIP4CVWk",
+          "mode": "id"
+        },
+        "sheetName": { "__rl": true, "value": "UTMs Generados", "mode": "name" },
+        "columns": {
+          "mappingMode": "defineBelow",
+          "value": {
+            "Fecha": "={{ $json.fecha_creacion }}",
+            "Tracking ID": "={{ $json.tracking_id }}",
+            "URL Original": "={{ $json.url_original }}",
+            "URL UTM": "={{ $json.url_utm }}",
+            "Source": "={{ $json.utm_source }}",
+            "Medium": "={{ $json.utm_medium }}",
+            "Campaign": "={{ $json.utm_campaign }}",
+            "Content": "={{ $json.utm_content }}",
+            "Term": "={{ $json.utm_term }}"
+          }
+        }
+      },
+      "id": "sheets-utm",
+      "name": "Google Sheets - Registrar UTM",
+      "type": "n8n-nodes-base.googleSheets",
+      "typeVersion": 4,
+      "position": [680, 300]
+    },
+    {
+      "parameters": {
+        "chatId": "6724881174",
+        "text": "🔗 *UTM Generado - GuiaCrucerista*\n\n🆔 ID: `{{ $json.tracking_id }}`\n📣 Source: {{ $json.utm_source }}\n📢 Medium: {{ $json.utm_medium }}\n🎯 Campaign: {{ $json.utm_campaign }}\n\n✅ *URL lista:*\n`{{ $json.url_utm }}`",
+        "additionalFields": { "parse_mode": "Markdown" }
+      },
+      "id": "telegram-utm",
+      "name": "Telegram - Confirmar UTM",
+      "type": "n8n-nodes-base.telegram",
+      "typeVersion": 1.2,
+      "position": [900, 200],
+      "credentials": {
+        "telegramApi": {
+          "id": "telegram-creds",
+          "name": "Telegram Bot GuiaCrucerista"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "respondWith": "json",
+        "responseBody": "={{ JSON.stringify({ success: true, tracking_id: $json.tracking_id, url_utm: $json.url_utm }) }}"
+      },
+      "id": "response-utm",
+      "name": "Responder Webhook",
+      "type": "n8n-nodes-base.respondToWebhook",
+      "typeVersion": 1,
+      "position": [900, 400]
+    }
+  ],
+  "connections": {
+    "Webhook - Recibir datos": { "main": [[{ "node": "Construir URL con UTM", "type": "main", "index": 0 }]] },
+    "Construir URL con UTM": { "main": [[{ "node": "Google Sheets - Registrar UTM", "type": "main", "index": 0 }]] },
+    "Google Sheets - Registrar UTM": { "main": [[{ "node": "Telegram - Confirmar UTM", "type": "main", "index": 0 }, { "node": "Responder Webhook", "type": "main", "index": 0 }]] }
+  },
+  "settings": {
+    "executionOrder": "v1",
+    "saveManualExecutions": true
+  },
+  "meta": {
+    "telegramToken": "8546910859:AAEZeAFZKYRXnJckiBplRQqB3ssIGFhgkso",
+    "telegramChatId": "6724881174",
+    "windsorApiKey": "f0a3576c428dbbf6be98ffc680022afc0306",
+    "vps": "agente.metricastudio.eu",
+    "googleSheetId": "14QcT_BFRUGjP5Z69sdoAPYfNtRlrJ1u2cDsmIP4CVWk",
+    "webhookUrl": "https://agente.metricastudio.eu/webhook/generar-utm"
+  },
+  "tags": [{ "name": "guiacrucerista" }, { "name": "utm" }, { "name": "tracking" }]
+}

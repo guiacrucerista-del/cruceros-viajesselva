@@ -1,0 +1,135 @@
+{
+  "name": "GuiaCrucerista — Reporte Semanal",
+  "nodes": [
+    {
+      "parameters": {
+        "rule": {
+          "interval": [
+            {
+              "field": "weeks",
+              "weeksInterval": 1,
+              "triggerAtDay": [1],
+              "triggerAtHour": 8,
+              "triggerAtMinute": 0
+            }
+          ]
+        }
+      },
+      "id": "cron-trigger",
+      "name": "Cron - Lunes 8am",
+      "type": "n8n-nodes-base.scheduleTrigger",
+      "typeVersion": 1.1,
+      "position": [240, 300]
+    },
+    {
+      "parameters": {
+        "url": "https://www.googleapis.com/webmasters/v3/sites/https%3A%2F%2Fguiacrucerista.com%2F/searchAnalytics/query",
+        "authentication": "oAuth2",
+        "method": "POST",
+        "sendBody": true,
+        "bodyParameters": {
+          "parameters": [
+            {
+              "name": "startDate",
+              "value": "={{ $now.minus({weeks: 1}).startOf('week').toFormat('yyyy-MM-dd') }}"
+            },
+            {
+              "name": "endDate",
+              "value": "={{ $now.minus({weeks: 1}).endOf('week').toFormat('yyyy-MM-dd') }}"
+            },
+            {
+              "name": "dimensions",
+              "value": "[\"query\",\"page\"]"
+            },
+            {
+              "name": "rowLimit",
+              "value": "25"
+            }
+          ]
+        }
+      },
+      "id": "gsc-fetch",
+      "name": "Google Search Console",
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.2,
+      "position": [460, 300]
+    },
+    {
+      "parameters": {
+        "url": "https://windsor.ai/api/v1/fetch",
+        "method": "GET",
+        "sendQuery": true,
+        "queryParameters": {
+          "parameters": [
+            { "name": "api_key", "value": "f0a3576c428dbbf6be98ffc680022afc0306" },
+            { "name": "connector", "value": "google_analytics" },
+            { "name": "date_preset", "value": "last_week" },
+            { "name": "fields", "value": "sessions,pageviews,bounceRate,avgSessionDuration" }
+          ]
+        }
+      },
+      "id": "windsor-fetch",
+      "name": "Windsor.ai - Analytics",
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.2,
+      "position": [460, 460]
+    },
+    {
+      "parameters": {
+        "operation": "appendOrUpdate",
+        "documentId": {
+          "__rl": true,
+          "value": "14QcT_BFRUGjP5Z69sdoAPYfNtRlrJ1u2cDsmIP4CVWk",
+          "mode": "id"
+        },
+        "sheetName": { "__rl": true, "value": "Reporte Semanal", "mode": "name" },
+        "columns": {
+          "mappingMode": "autoMapInputData"
+        }
+      },
+      "id": "sheets-write",
+      "name": "Google Sheets - Registrar",
+      "type": "n8n-nodes-base.googleSheets",
+      "typeVersion": 4,
+      "position": [680, 380]
+    },
+    {
+      "parameters": {
+        "chatId": "6724881174",
+        "text": "📊 *Reporte Semanal GuiaCrucerista*\n\n✅ Datos de la semana pasada registrados en Google Sheets.\n\n🔗 https://docs.google.com/spreadsheets/d/14QcT_BFRUGjP5Z69sdoAPYfNtRlrJ1u2cDsmIP4CVWk",
+        "additionalFields": { "parse_mode": "Markdown" }
+      },
+      "id": "telegram-notify",
+      "name": "Telegram - Notificar",
+      "type": "n8n-nodes-base.telegram",
+      "typeVersion": 1.2,
+      "position": [900, 380],
+      "credentials": {
+        "telegramApi": {
+          "id": "telegram-creds",
+          "name": "Telegram Bot GuiaCrucerista"
+        }
+      }
+    }
+  ],
+  "connections": {
+    "Cron - Lunes 8am": { "main": [[{ "node": "Google Search Console", "type": "main", "index": 0 }, { "node": "Windsor.ai - Analytics", "type": "main", "index": 0 }]] },
+    "Google Search Console": { "main": [[{ "node": "Google Sheets - Registrar", "type": "main", "index": 0 }]] },
+    "Windsor.ai - Analytics": { "main": [[{ "node": "Google Sheets - Registrar", "type": "main", "index": 0 }]] },
+    "Google Sheets - Registrar": { "main": [[{ "node": "Telegram - Notificar", "type": "main", "index": 0 }]] }
+  },
+  "settings": {
+    "executionOrder": "v1",
+    "saveManualExecutions": true,
+    "callerPolicy": "workflowsFromSameOwner"
+  },
+  "meta": {
+    "telegramToken": "8546910859:AAEZeAFZKYRXnJckiBplRQqB3ssIGFhgkso",
+    "telegramChatId": "6724881174",
+    "windsorApiKey": "f0a3576c428dbbf6be98ffc680022afc0306",
+    "vps": "agente.metricastudio.eu",
+    "googleSheetId": "14QcT_BFRUGjP5Z69sdoAPYfNtRlrJ1u2cDsmIP4CVWk",
+    "instanceId": "guiacrucerista-n8n"
+  },
+  "tags": [{ "name": "guiacrucerista" }, { "name": "reportes" }]
+}

@@ -1,0 +1,141 @@
+{
+  "name": "GuiaCrucerista — Alerta Viral",
+  "nodes": [
+    {
+      "parameters": {
+        "rule": {
+          "interval": [
+            {
+              "field": "hours",
+              "hoursInterval": 6
+            }
+          ]
+        }
+      },
+      "id": "cron-alerta",
+      "name": "Cron - Cada 6h",
+      "type": "n8n-nodes-base.scheduleTrigger",
+      "typeVersion": 1.1,
+      "position": [240, 300]
+    },
+    {
+      "parameters": {
+        "url": "https://windsor.ai/api/v1/fetch",
+        "method": "GET",
+        "sendQuery": true,
+        "queryParameters": {
+          "parameters": [
+            { "name": "api_key", "value": "f0a3576c428dbbf6be98ffc680022afc0306" },
+            { "name": "connector", "value": "google_analytics" },
+            { "name": "date_preset", "value": "yesterday" },
+            { "name": "fields", "value": "sessions,pageviews,page" },
+            { "name": "sort", "value": "-sessions" },
+            { "name": "limit", "value": "10" }
+          ]
+        }
+      },
+      "id": "windsor-viral",
+      "name": "Windsor.ai - Top Páginas",
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.2,
+      "position": [460, 300]
+    },
+    {
+      "parameters": {
+        "conditions": {
+          "number": [
+            {
+              "value1": "={{ $json.sessions }}",
+              "operation": "larger",
+              "value2": 100
+            }
+          ]
+        }
+      },
+      "id": "viral-check",
+      "name": "¿Supera 100 sesiones?",
+      "type": "n8n-nodes-base.if",
+      "typeVersion": 2,
+      "position": [680, 300]
+    },
+    {
+      "parameters": {
+        "url": "https://www.googleapis.com/webmasters/v3/sites/https%3A%2F%2Fguiacrucerista.com%2F/searchAnalytics/query",
+        "authentication": "oAuth2",
+        "method": "POST",
+        "sendBody": true,
+        "bodyParameters": {
+          "parameters": [
+            { "name": "startDate", "value": "={{ $now.minus({days: 1}).toFormat('yyyy-MM-dd') }}" },
+            { "name": "endDate", "value": "={{ $now.minus({days: 1}).toFormat('yyyy-MM-dd') }}" },
+            { "name": "dimensions", "value": "[\"query\"]" },
+            { "name": "rowLimit", "value": "5" }
+          ]
+        }
+      },
+      "id": "gsc-viral",
+      "name": "GSC - Queries virales",
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.2,
+      "position": [900, 200]
+    },
+    {
+      "parameters": {
+        "chatId": "6724881174",
+        "text": "🚨 *¡ALERTA VIRAL! GuiaCrucerista.com*\n\n🔥 Una página supera las 100 sesiones en 24h.\n\n📄 Página: {{ $json.page }}\n👁 Sesiones: {{ $json.sessions }}\n\n📊 Revisa el dashboard:\nhttps://docs.google.com/spreadsheets/d/14QcT_BFRUGjP5Z69sdoAPYfNtRlrJ1u2cDsmIP4CVWk\n\n🤖 _Alerta automática desde agente.metricastudio.eu_",
+        "additionalFields": { "parse_mode": "Markdown" }
+      },
+      "id": "telegram-viral",
+      "name": "Telegram - Alerta Viral",
+      "type": "n8n-nodes-base.telegram",
+      "typeVersion": 1.2,
+      "position": [1120, 200],
+      "credentials": {
+        "telegramApi": {
+          "id": "telegram-creds",
+          "name": "Telegram Bot GuiaCrucerista"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "operation": "appendOrUpdate",
+        "documentId": {
+          "__rl": true,
+          "value": "14QcT_BFRUGjP5Z69sdoAPYfNtRlrJ1u2cDsmIP4CVWk",
+          "mode": "id"
+        },
+        "sheetName": { "__rl": true, "value": "Alertas Virales", "mode": "name" },
+        "columns": { "mappingMode": "autoMapInputData" }
+      },
+      "id": "sheets-viral",
+      "name": "Google Sheets - Log Viral",
+      "type": "n8n-nodes-base.googleSheets",
+      "typeVersion": 4,
+      "position": [1120, 380]
+    }
+  ],
+  "connections": {
+    "Cron - Cada 6h": { "main": [[{ "node": "Windsor.ai - Top Páginas", "type": "main", "index": 0 }]] },
+    "Windsor.ai - Top Páginas": { "main": [[{ "node": "¿Supera 100 sesiones?", "type": "main", "index": 0 }]] },
+    "¿Supera 100 sesiones?": {
+      "main": [
+        [{ "node": "GSC - Queries virales", "type": "main", "index": 0 }],
+        []
+      ]
+    },
+    "GSC - Queries virales": { "main": [[{ "node": "Telegram - Alerta Viral", "type": "main", "index": 0 }, { "node": "Google Sheets - Log Viral", "type": "main", "index": 0 }]] }
+  },
+  "settings": {
+    "executionOrder": "v1",
+    "saveManualExecutions": true
+  },
+  "meta": {
+    "telegramToken": "8546910859:AAEZeAFZKYRXnJckiBplRQqB3ssIGFhgkso",
+    "telegramChatId": "6724881174",
+    "windsorApiKey": "f0a3576c428dbbf6be98ffc680022afc0306",
+    "vps": "agente.metricastudio.eu",
+    "googleSheetId": "14QcT_BFRUGjP5Z69sdoAPYfNtRlrJ1u2cDsmIP4CVWk"
+  },
+  "tags": [{ "name": "guiacrucerista" }, { "name": "alertas" }]
+}
