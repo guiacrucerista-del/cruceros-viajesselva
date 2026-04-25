@@ -11,6 +11,16 @@
     },
     {
       "parameters": {
+        "command": "curl -fsSL -o /opt/guiacrucerista/scripts/playwright_facebook_grupos.js https://raw.githubusercontent.com/guiacrucerista-del/cruceros-viajesselva/main/playwright_facebook_grupos.js && echo 'Script actualizado OK'"
+      },
+      "id": "auto-update-script",
+      "name": "Auto-Update Script Playwright",
+      "type": "n8n-nodes-base.executeCommand",
+      "typeVersion": 1,
+      "position": [240, 400]
+    },
+    {
+      "parameters": {
         "operation": "getAll",
         "documentId": { "__rl": true, "value": "14QcT_BFRUGjP5Z69sdoAPYfNtRlrJ1u2cDsmIP4CVWk", "mode": "id" },
         "sheetName": { "__rl": true, "value": "Cola de Publicaciones", "mode": "name" },
@@ -136,7 +146,8 @@ try {
     }
   ],
   "connections": {
-    "Manual Trigger": { "main": [[{ "node": "Sheets - Leer Cola", "type": "main", "index": 0 }]] },
+    "Manual Trigger": { "main": [[{ "node": "Auto-Update Script Playwright", "type": "main", "index": 0 }]] },
+    "Auto-Update Script Playwright": { "main": [[{ "node": "Sheets - Leer Cola", "type": "main", "index": 0 }]] },
     "Sheets - Leer Cola": { "main": [[{ "node": "Preparar Post", "type": "main", "index": 0 }]] },
     "Preparar Post": { "main": [[{ "node": "IF Pagina", "type": "main", "index": 0 }]] },
     "IF Pagina": {
