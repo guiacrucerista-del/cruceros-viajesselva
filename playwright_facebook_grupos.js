@@ -142,9 +142,14 @@ async function postToGroup(page, groupId, text, url) {
     }
 
     if (!clicked) {
-      // Intento alternativo: buscar cualquier botón/div con texto de crear post
-      await page.click('text=/Escribe algo|Write something|Qué tienes en mente/i');
-      clicked = true;
+      // Intento alternativo: buscar por texto parcial de crear post
+      const fallbackTexts = ['Escribe algo', 'Write something', 'Qué tienes en mente', 'En qué estás pensando'];
+      for (const t of fallbackTexts) {
+        try {
+          const el = await page.getByText(t, { exact: false }).first();
+          if (el) { await el.click(); clicked = true; break; }
+        } catch {}
+      }
     }
 
     await sleep(2000);
