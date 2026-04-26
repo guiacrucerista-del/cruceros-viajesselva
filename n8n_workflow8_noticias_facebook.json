@@ -14,7 +14,7 @@
     {
       "parameters": {
         "mode": "runOnceForAllItems",
-        "jsCode": "// Fetch y parseo de todos los feeds RSS de noticias navieras\nconst feeds = [\n  { company:'msc',    name:'MSC Cruceros',      rssUrl:'https://news.google.com/rss/search?q=MSC+cruceros&hl=es&gl=ES&ceid=ES:es',           groups:'811550587597467',  page:'guiacrucerista' },\n  { company:'royal',  name:'Royal Caribbean',   rssUrl:'https://news.google.com/rss/search?q=Royal+Caribbean+cruceros&hl=es&gl=ES&ceid=ES:es',groups:'1116074769675601', page:'guiacrucerista' },\n  { company:'costa',  name:'Costa Cruceros',    rssUrl:'https://news.google.com/rss/search?q=Costa+Cruceros&hl=es&gl=ES&ceid=ES:es',          groups:'1882092085657041', page:'guiacrucerista' },\n  { company:'general',name:'Cruceros General',  rssUrl:'https://news.google.com/rss/search?q=cruceros+Mediterraneo+noticias&hl=es&gl=ES&ceid=ES:es', groups:'',           page:'guiacrucerista' },\n  { company:'fluvial',name:'Cruceros Fluviales',rssUrl:'https://news.google.com/rss/search?q=cruceros+fluviales+Europa&hl=es&gl=ES&ceid=ES:es',      groups:'',           page:'guiacrucerista' }\n];\n\nconst allItems = [];\n\nfor (const feed of feeds) {\n  try {\n    const response = await $http.get(feed.rssUrl, { headers: { 'User-Agent': 'Mozilla/5.0 GuiaCrucerista/1.0' } });\n    const xml = response.data;\n    const itemRegex = /<item>([\\s\\S]*?)<\\/item>/g;\n    let match;\n    let count = 0;\n    while ((match = itemRegex.exec(xml)) !== null && count < 2) {\n      const c = match[1];\n      const title   = (/<title>(?:<!\\[CDATA\\[)?(.*?)(?:\\]\\]>)?<\\/title>/s.exec(c) || [])[1]?.trim() || '';\n      const link    = (/<link>(.*?)<\\/link>/.exec(c) || [])[1]?.trim() || '';\n      const pubDate = (/<pubDate>(.*?)<\\/pubDate>/.exec(c) || [])[1]?.trim() || '';\n      const guid    = (/<guid[^>]*>(.*?)<\\/guid>/.exec(c) || [])[1]?.trim() || link;\n      const desc    = (/<description>(?:<!\\[CDATA\\[)?(.*?)(?:\\]\\]>)?<\\/description>/s.exec(c) || [])[1]?.trim().replace(/<[^>]+>/g,'').substring(0,300) || '';\n      const hoursOld = pubDate ? (Date.now() - new Date(pubDate).getTime()) / 3600000 : 99;\n      if (title && link && hoursOld <= 8) {\n        allItems.push({ json: { title, link, pubDate, guid, desc, company: feed.company, feedName: feed.name, groups: feed.groups, page: feed.page } });\n        count++;\n      }\n    }\n  } catch(e) {\n    console.log('Error feed ' + feed.company + ': ' + e.message);\n  }\n}\n\nreturn allItems.length ? allItems : [{ json: { skip: true, reason: 'Sin noticias nuevas en las últimas 8h' } }];"
+        "jsCode": "const feeds = [\n  { company:'msc',    name:'MSC Cruceros',      rssUrl:'https://news.google.com/rss/search?q=MSC+cruceros&hl=es&gl=ES&ceid=ES:es',                  groups:'811550587597467',  page:'guiacrucerista' },\n  { company:'royal',  name:'Royal Caribbean',   rssUrl:'https://news.google.com/rss/search?q=Royal+Caribbean+cruceros&hl=es&gl=ES&ceid=ES:es',         groups:'1116074769675601', page:'guiacrucerista' },\n  { company:'costa',  name:'Costa Cruceros',    rssUrl:'https://news.google.com/rss/search?q=Costa+Cruceros&hl=es&gl=ES&ceid=ES:es',                   groups:'1882092085657041', page:'guiacrucerista' },\n  { company:'general',name:'Cruceros General',  rssUrl:'https://news.google.com/rss/search?q=cruceros+Mediterraneo+noticias&hl=es&gl=ES&ceid=ES:es',    groups:'',                page:'guiacrucerista' },\n  { company:'fluvial',name:'Cruceros Fluviales',rssUrl:'https://news.google.com/rss/search?q=cruceros+fluviales+Europa&hl=es&gl=ES&ceid=ES:es',          groups:'',                page:'guiacrucerista' }\n];\n\nconst allItems = [];\nfor (const feed of feeds) {\n  try {\n    const response = await $http.get(feed.rssUrl, { headers: { 'User-Agent': 'Mozilla/5.0 GuiaCrucerista/1.0' } });\n    const xml = response.data;\n    const itemRegex = /<item>([\\s\\S]*?)<\\/item>/g;\n    let match, count = 0;\n    while ((match = itemRegex.exec(xml)) !== null && count < 2) {\n      const c = match[1];\n      const title   = (/<title>(?:<!\\[CDATA\\[)?(.*?)(?:\\]\\]>)?<\\/title>/s.exec(c)||[])[1]?.trim()||'';\n      const link    = (/<link>(.*?)<\\/link>/.exec(c)||[])[1]?.trim()||'';\n      const pubDate = (/<pubDate>(.*?)<\\/pubDate>/.exec(c)||[])[1]?.trim()||'';\n      const desc    = (/<description>(?:<!\\[CDATA\\[)?(.*?)(?:\\]\\]>)?<\\/description>/s.exec(c)||[])[1]?.trim().replace(/<[^>]+>/g,'').substring(0,300)||'';\n      const hoursOld = pubDate ? (Date.now()-new Date(pubDate).getTime())/3600000 : 99;\n      if (title && link && hoursOld <= 8) {\n        allItems.push({ json: { title, link, pubDate, desc, company: feed.company, feedName: feed.name, groups: feed.groups, page: feed.page } });\n        count++;\n      }\n    }\n  } catch(e) { console.log('Error feed '+feed.company+': '+e.message); }\n}\nreturn allItems.length ? allItems : [{ json: { skip: true, reason: 'Sin noticias nuevas' } }];"
       },
       "id": "a1000002-0000-0000-0000-000000000002",
       "name": "Fetch y Parsear RSS",
@@ -38,100 +38,98 @@
     },
     {
       "parameters": {
-        "model": "gpt-4o-mini",
-        "options": { "temperature": 0.8, "maxTokens": 400 },
-        "messages": {
-          "values": [
+        "method": "POST",
+        "url": "https://api.openai.com/v1/chat/completions",
+        "authentication": "predefinedCredentialType",
+        "nodeCredentialType": "openAiApi",
+        "sendBody": true,
+        "bodyParameters": {
+          "parameters": [
             {
-              "content": "Eres un experto en marketing de cruceros. Tu misión: crear un post de Facebook atractivo en español.\n\nNOTICIA:\nTítulo: {{ $json.title }}\nFuente: {{ $json.feedName }}\nResumen: {{ $json.desc }}\nURL: {{ $json.link }}\n\nREGLAS:\n- Máximo 280 caracteres\n- Empieza con 1-2 emojis relevantes (🚢⚓🌊🏖️🎉)\n- Incluye el nombre de la compañía si aplica\n- CTA breve: \"Ver más 👇\" al final\n- Tono entusiasta pero informativo\n- NO incluyas la URL en el texto (se añade como comentario)\n- Solo devuelve el texto del post, sin comillas ni explicaciones",
-              "role": "user"
+              "name": "model",
+              "value": "gpt-4o-mini"
+            },
+            {
+              "name": "max_tokens",
+              "value": "400"
+            },
+            {
+              "name": "temperature",
+              "value": "0.8"
+            },
+            {
+              "name": "messages",
+              "value": "=[{\"role\":\"user\",\"content\":\"Eres experto en marketing de cruceros. Crea un post de Facebook atractivo en español (máximo 280 caracteres). Empieza con emojis 🚢⚓🌊. Incluye el nombre de la compañía si aplica. Termina con 'Ver más 👇'. Solo devuelve el texto del post sin comillas ni explicaciones.\\n\\nTítulo: {{ $json.title }}\\nFuente: {{ $json.feedName }}\\nResumen: {{ $json.desc }}\"}]"
             }
           ]
-        }
+        },
+        "options": {}
       },
       "id": "a1000004-0000-0000-0000-000000000004",
       "name": "Formatear Post con IA",
-      "type": "n8n-nodes-base.openAi",
-      "typeVersion": 1.4,
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.2,
       "position": [680, 300],
       "credentials": { "openAiApi": { "id": "1", "name": "OpenAI account" } }
     },
     {
       "parameters": {
         "mode": "runOnceForEachItem",
-        "jsCode": "// Preparar archivo JSON para el script Playwright\nconst postText = $input.item.json.message?.content || $input.item.json.text || 'Noticia cruceros';\nconst groups   = $input.item.json.groups || '';\nconst page     = $input.item.json.page   || '';\nconst url      = $input.item.json.link   || '';\nconst company  = $input.item.json.company || 'general';\n\nconst postData = { text: postText, url, groups: groups ? groups.split(',') : [], page };\nconst tmpFile  = '/tmp/fb_noticias_' + Date.now() + '.json';\n\nreturn [{ json: { postData, postJson: JSON.stringify(postData), tmpFile, company, postText, url, groups, page } }];"
+        "jsCode": "const aiResponse = $input.item.json;\nconst postText = aiResponse.choices?.[0]?.message?.content?.trim() || $input.item.json.title || 'Noticia cruceros';\n\nconst prev = $('Hay Noticias').item.json;\nconst groups = prev.groups || '';\nconst page   = prev.page   || '';\nconst url    = prev.link   || '';\nconst company = prev.company || 'general';\n\nreturn [{ json: {\n  postText,\n  url,\n  groups: groups ? groups.split(',').map(g => g.trim()).filter(Boolean) : [],\n  page,\n  company\n} }];"
       },
       "id": "a1000005-0000-0000-0000-000000000005",
-      "name": "Preparar Comando",
+      "name": "Preparar Post",
       "type": "n8n-nodes-base.code",
       "typeVersion": 2,
       "position": [880, 300]
     },
     {
       "parameters": {
-        "command": "printf '%s' '{{ $json.postJson.replace(/'/g, \"'\\\\''\" ) }}' > {{ $json.tmpFile }} && export $(cat /opt/guiacrucerista/scripts/.env | xargs) && node /opt/guiacrucerista/scripts/playwright_facebook_grupos.js --input {{ $json.tmpFile }}; EXIT=$?; rm -f {{ $json.tmpFile }}; exit $EXIT"
+        "method": "POST",
+        "url": "http://127.0.0.1:3456/publish",
+        "sendHeaders": true,
+        "headerParameters": {
+          "parameters": [
+            { "name": "x-api-token", "value": "guiacrucerista-2026" },
+            { "name": "Content-Type", "value": "application/json" }
+          ]
+        },
+        "sendBody": true,
+        "contentType": "json",
+        "body": "={{ JSON.stringify({ text: $json.postText, url: $json.url, groups: $json.groups, page: $json.page }) }}",
+        "options": { "timeout": 300000 }
       },
       "id": "a1000006-0000-0000-0000-000000000006",
       "name": "Publicar en Facebook",
-      "type": "n8n-nodes-base.executeCommand",
-      "typeVersion": 1,
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.2,
       "position": [1080, 300]
     },
     {
       "parameters": {
-        "operation": "append",
-        "documentId": { "mode": "id", "value": "SHEETS_ID_AQUI" },
-        "sheetName": { "mode": "name", "value": "Publicaciones" },
-        "columns": {
-          "mappingMode": "defineBelow",
-          "value": {
-            "timestamp":  "={{ new Date().toISOString() }}",
-            "tipo":       "noticia",
-            "compania":   "={{ $('Preparar Comando').item.json.company }}",
-            "titulo":     "={{ $('Preparar Comando').item.json.postText.substring(0,100) }}",
-            "url_fuente": "={{ $('Preparar Comando').item.json.url }}",
-            "grupos":     "={{ $('Preparar Comando').item.json.groups }}",
-            "pagina":     "={{ $('Preparar Comando').item.json.page }}",
-            "resultado":  "={{ $json.exitCode === 0 ? 'ok' : 'error' }}"
-          }
-        },
-        "options": {}
-      },
-      "id": "a1000007-0000-0000-0000-000000000007",
-      "name": "Registrar en Sheets",
-      "type": "n8n-nodes-base.googleSheets",
-      "typeVersion": 4.3,
-      "position": [1280, 300],
-      "credentials": { "googleSheetsOAuth2Api": { "id": "2", "name": "GuiaCrucerista Google Sheets" } }
-    },
-    {
-      "parameters": {
-        "chatId": "={{ $env.TELEGRAM_CHAT_ID }}",
-        "text": "=🚢 *GuiaCrucerista — Noticia publicada*\n\n📰 {{ $('Preparar Comando').item.json.postText.substring(0,120) }}...\n\n🔗 {{ $('Preparar Comando').item.json.url }}\n✅ Estado: {{ $('Publicar en Facebook').item.json.exitCode === 0 ? 'Publicado' : 'Error' }}",
+        "chatId": "={{ $vars.TELEGRAM_CHAT_ID || '' }}",
+        "text": "=🚢 *GuiaCrucerista — Noticia publicada*\n\n📰 {{ $('Preparar Post').item.json.postText.substring(0,150) }}\n\n🔗 {{ $('Preparar Post').item.json.url }}\n✅ Estado: {{ $json.success ? 'Publicado ✅' : 'Error ❌' }}\n🏢 Compañía: {{ $('Preparar Post').item.json.company }}",
         "additionalFields": { "parse_mode": "Markdown" }
       },
-      "id": "a1000008-0000-0000-0000-000000000008",
+      "id": "a1000007-0000-0000-0000-000000000007",
       "name": "Notificar Telegram",
       "type": "n8n-nodes-base.telegram",
       "typeVersion": 1.2,
-      "position": [1480, 300],
+      "position": [1280, 300],
       "credentials": { "telegramApi": { "id": "3", "name": "GuiaCrucerista Telegram" } }
     }
   ],
   "connections": {
-    "Cada 8 Horas":          { "main": [[{ "node": "Fetch y Parsear RSS",     "type": "main", "index": 0 }]] },
-    "Fetch y Parsear RSS":   { "main": [[{ "node": "Hay Noticias",            "type": "main", "index": 0 }]] },
-    "Hay Noticias":          { "main": [[{ "node": "Formatear Post con IA",   "type": "main", "index": 0 }]] },
-    "Formatear Post con IA": { "main": [[{ "node": "Preparar Comando",        "type": "main", "index": 0 }]] },
-    "Preparar Comando":      { "main": [[{ "node": "Publicar en Facebook",    "type": "main", "index": 0 }]] },
-    "Publicar en Facebook":  { "main": [[{ "node": "Registrar en Sheets",     "type": "main", "index": 0 }]] },
-    "Registrar en Sheets":   { "main": [[{ "node": "Notificar Telegram",      "type": "main", "index": 0 }]] }
+    "Cada 8 Horas":          { "main": [[{ "node": "Fetch y Parsear RSS",    "type": "main", "index": 0 }]] },
+    "Fetch y Parsear RSS":   { "main": [[{ "node": "Hay Noticias",           "type": "main", "index": 0 }]] },
+    "Hay Noticias":          { "main": [[{ "node": "Formatear Post con IA",  "type": "main", "index": 0 }]] },
+    "Formatear Post con IA": { "main": [[{ "node": "Preparar Post",          "type": "main", "index": 0 }]] },
+    "Preparar Post":         { "main": [[{ "node": "Publicar en Facebook",   "type": "main", "index": 0 }]] },
+    "Publicar en Facebook":  { "main": [[{ "node": "Notificar Telegram",     "type": "main", "index": 0 }]] }
   },
   "settings": {
     "executionOrder": "v1",
-    "saveManualExecutions": true,
-    "callerPolicy": "workflowsFromSameOwner",
-    "errorWorkflow": ""
+    "saveManualExecutions": true
   },
   "staticData": null,
   "tags": [{ "name": "guiacrucerista" }]
