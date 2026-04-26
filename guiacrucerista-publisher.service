@@ -1,0 +1,17 @@
+[Unit]
+Description=GuiaCrucerista Publisher API
+After=network.target
+
+[Service]
+Type=simple
+User=root
+WorkingDirectory=/opt/guiacrucerista/scripts
+EnvironmentFile=/opt/guiacrucerista/scripts/.env
+ExecStart=/usr/bin/node /opt/guiacrucerista/scripts/publisher-api.js
+Restart=always
+RestartSec=10
+StandardOutput=journal
+StandardError=journal
+
+[Install]
+WantedBy=multi-user.target
